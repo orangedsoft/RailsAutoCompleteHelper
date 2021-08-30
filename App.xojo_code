@@ -28,13 +28,6 @@ Inherits Application
 		  
 		  LoadPrefs
 		  LoadProjectFolder
-		  
-		  
-		  dim ww as new WinAutoFiller
-		  ww.loadpossibilities
-		  ww.ParentWindow = nil
-		  app.MainWindow = ww
-		  ww.show
 		End Sub
 	#tag EndEvent
 
@@ -150,6 +143,17 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub QueueDelayedKeystrokes(theString as string)
+		  myDelayedString = theString
+		  dim tt as new timer
+		  tt.RunMode = timer.RunModes.Single
+		  tt.Period = 500
+		  myDelayedStrokesTimer = tt
+		  AddHandler tt.action, AddressOf SendDelayedStrokeNow
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub SavePrefs()
 		  
 		  
@@ -162,6 +166,12 @@ Inherits Application
 		  dim textout as TextOutputStream = TextOutputStream.Open(ff)
 		  textout.Write LastBaseFolderPath
 		  textout.Close
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub SendDelayedStrokeNow(sender as object = nil)
+		  sendKeystrokes(myDelayedString)
 		End Sub
 	#tag EndMethod
 
@@ -202,6 +212,14 @@ Inherits Application
 		MainWindow As WinAutoFiller
 	#tag EndProperty
 
+	#tag Property, Flags = &h1
+		Protected myDelayedString As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h1
+		Protected myDelayedStrokesTimer As Timer
+	#tag EndProperty
+
 	#tag Property, Flags = &h0
 		ShortCutTimer As timer
 	#tag EndProperty
@@ -229,7 +247,7 @@ Inherits Application
 			Group="Behavior"
 			InitialValue=""
 			Type="String"
-			EditorType=""
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

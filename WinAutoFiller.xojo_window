@@ -237,14 +237,14 @@ End
 		    ww.show
 		    
 		  case 1
-		    //copy result
-		    dim cc as new Clipboard
-		    cc.Text = EDSearch.Text
-		    sendKeystrokes(EDSearch.Text)
+		    dim result as string = EDSearch.Text
 		    app.StartClearAll(false)
 		    app.HideApp
+		    app.QueueDelayedKeystrokes(result)//this will attempt to hide app and send to frontmost app
 		    
 		  end select
+		  
+		  
 		End Sub
 	#tag EndMethod
 
@@ -444,6 +444,7 @@ End
 		  //29 = right
 		  //30 = up
 		  //31 = down
+		  //32 = space
 		  
 		  //46 = .
 		  
@@ -480,7 +481,7 @@ End
 		    end if
 		    
 		  else
-		    CurrentSearch = CurrentSearch + key
+		    CurrentSearch = CurrentSearch + if(asc(key) = 32,"_",key)
 		  end select
 		  
 		  
@@ -838,6 +839,6 @@ End
 		Group="Behavior"
 		InitialValue=""
 		Type="String"
-		EditorType=""
+		EditorType="MultiLineEditor"
 	#tag EndViewProperty
 #tag EndViewBehavior
