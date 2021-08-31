@@ -1,4 +1,7 @@
 # RailsAutoCompleteHelper.app
+
+![Very autocomplete](https://media.giphy.com/media/lOkLY9GaN779AwE47I/giphy.gif)
+
  Native Mac app, autocomplete helper for Rails projects that pulls data from model files. 
 
 This app will accept a project folder and load the files located in /app/models/ and search for:
@@ -10,7 +13,7 @@ This app will accept a project folder and load the files located in /app/models/
 This is a very rudimentary autocomplete app used for internal purposes. There are many limitations including:
 - It doesn't search any folders besides the main app/models/ folder
 - It's Mac-only but could be modified to work on Windows if you feel like dealing with declares
-- It currently doesn't work smoothly with spaces/full screen
+- It currently doesn't work smoothly with Mission Control Spaces/full screen
 - There will be many false positives/negatives for method/property/association matches since we didn't spend a ton of time accounting for different formats
 - It's intended for Rails 6.x
 
