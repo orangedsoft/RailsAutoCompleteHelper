@@ -1,7 +1,7 @@
-# rails-class-helper
+# RailsAutoCompleteHelper.app
  Native Mac app, autocomplete helper for Rails projects that pulls data from model files. 
 
-This app will accept a folder and load the files located in app/models/ and search for:
+This app will accept a project folder and load the files located in /app/models/ and search for:
 - Methods and self.methods, found by lines that begin with "def "
 - Properties, found by the schema information produced by the Annotate gem
 - Assocations, found by lines beginning with the various Rails association types
@@ -17,10 +17,10 @@ This is a very rudimentary autocomplete app used for internal purposes. There ar
 ---
 ## To use the compiled app with your Rails project
 1. [Annotate gem](https://github.com/ctran/annotate_models) is required in your Rails project so this app can pull property values from the model.rb files.
-2. You'll need to go into System Preferences > Security & Privacy > Privacy > Accessibility, unlock the pane with your system admin password, and drag and drop RailsClasses.app into the list. You might also have to go back in here and toggle it on and off multiple times since it seems very inconsistent and unreliable.
-3. You might also need to allow System Preferences > Security & Privacy > Privacy > Automation > RailsClasses > System Events
-4. Launch the RailsClasses.app and leave it running in the background. If you're using VSCode you can create a task to automatically launch this app when the Project folder is opened.
-5. Press Control-` to bring it to the front to start typing your class name. Select a class to start filtering through properties/methods/associations for the class. Select a property/method/association and the app will attempt to send exactly that property's full name to the last active app, via Applescript.
+2. You'll need to go into System Preferences > Security & Privacy > Privacy > Accessibility, unlock the pane with your system admin password, and drag and drop RailsAutoCompleteHelper.app into the list. You might also have to go back in here and toggle it on and off multiple times since it seems very inconsistent and unreliable.
+3. You might also need to allow System Preferences > Security & Privacy > Privacy > Automation > RailsAutoCompleteHelper > System Events
+4. Launch the RailsAutoCompleteHelper.app and leave it running in the background. If you're using VSCode you can create a task to automatically launch this app when the Project folder is opened.
+5. Press Control-` to bring it to the front to start typing your model name. Select a model to start filtering through properties/methods/associations for the model. Select a property/method/association and the app will attempt to send exactly that property's full name to the last active app, via Applescript.
 6. Pressing Escape a bunch will hide the app. Pressing cmd-1 while the app is active will clear all input and start you with a blank field.
 
 ---

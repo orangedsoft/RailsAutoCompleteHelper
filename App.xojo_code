@@ -91,7 +91,7 @@ Inherits Application
 		Sub LoadPrefs()
 		  
 		  
-		  dim ff as FolderItem = SpecialFolder.Preferences.Child("rails-class-helper-last-location.txt")
+		  dim ff as FolderItem = SpecialFolder.Preferences.Child("RailsAutoCompleteHelper-last-location.txt")
 		  
 		  if ff <> nil and ff.Exists then
 		    dim textin as TextInputStream = TextInputStream.Open(ff)
@@ -157,7 +157,7 @@ Inherits Application
 		Sub SavePrefs()
 		  
 		  
-		  dim ff as FolderItem = SpecialFolder.Preferences.Child("rails-class-helper-last-location.txt")
+		  dim ff as FolderItem = SpecialFolder.Preferences.Child("RailsAutoCompleteHelper-last-location.txt")
 		  
 		  if ff <> nil and ff.Exists then
 		    ff.Delete
