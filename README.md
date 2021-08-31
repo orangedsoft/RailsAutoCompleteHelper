@@ -19,7 +19,7 @@ This is a very rudimentary autocomplete app used for internal purposes. There ar
 
 ---
 ## To use the compiled app with your Rails project
-1. Download the [compiled Mac App](http://www.oranged.net/software/download/RailsAutoCompleteHelper.zip)
+1. Download the [compiled Mac App](https://github.com/orangedsoft/RailsAutoCompleteHelper/releases/download/v1.0/RailsAutoCompleteHelper.zip)
 2. [Annotate gem](https://github.com/ctran/annotate_models) is required in your Rails project so this app can pull property values from the model.rb files.
 3. You'll need to go into System Preferences > Security & Privacy > Privacy > Accessibility, unlock the pane with your system admin password, and drag and drop RailsAutoCompleteHelper.app into the list. You might also have to go back in here and toggle it on and off multiple times since it seems very inconsistent and unreliable.
 4. You might also need to allow System Preferences > Security & Privacy > Privacy > Automation > RailsAutoCompleteHelper > System Events

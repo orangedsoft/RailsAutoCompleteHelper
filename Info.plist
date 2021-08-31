@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>App</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.orangedsoftware.myapp</string>
+	<string>com.orangedsoftware.railsautocompletehelper</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
