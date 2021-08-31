@@ -11,18 +11,28 @@ Inherits Application
 		Sub Open()
 		  
 		  
-		  ///this app requires a registered version of MonkeybreadSoftware plugin from here:
-		  ///https://www.monkeybreadsoftware.net
+		  // this app requires a registered version of MonkeybreadSoftware plugin from here:
+		  // https://www.monkeybreadsoftware.net
 		  
-		  ///I put the registration into a separate class to prevent it from being committed to git with registration credentials
-		  ///So you'll have to make your own MBSRegistration class with RegisterMBS shared method for this to build properly
+		  // I put the registration into a separate class to prevent it from being committed to git with registration credentials
+		  // So you'll have to make your own MBSRegistration class with RegisterMBS shared method for this to build properly
 		  MBSRegistration.RegisterMBS
 		  
 		  
-		  
+		  // setup hot key
 		  dim keyCode as integer = HotKeyMBS.KeyCodeForText("grave")
 		  HotKeyWatcher = new HotKeyMBS(keyCode, HotKeyMBS.ControlKey)
 		  AddHandler HotKeyWatcher.KeyDown, WeakAddressOf BringToFront
+		  
+		  
+		  // hide app from dock
+		  dim myProcess as ProcessMBS
+		  myProcess=new ProcessMBS
+		  myProcess.GetCurrentProcess        
+		  if myProcess.TransformProcessType(myProcess.kProcessTransformToUIElementApplication) = 0 then
+		  end if
+		  
+		  
 		  
 		  
 		  
@@ -50,11 +60,23 @@ Inherits Application
 		End Function
 	#tag EndMenuHandler
 
+	#tag MenuHandler
+		Function filereloadCurrentProject() As Boolean Handles filereloadCurrentProject.Action
+			
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
 
 	#tag Method, Flags = &h0
 		Sub BringToFront(sender as object = nil)
-		  dim p as ProcessMBS
+		  if app.MainWindow = nil then
+		    app.OpenNewMainWindow
+		  end if
 		  
+		  
+		  dim p as ProcessMBS
 		  // move all windows to front
 		  p=new ProcessMBS
 		  p.GetCurrentProcess
@@ -63,27 +85,16 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub CheckForGlobalShortCut(sender as object = nil)
-		  if Keyboard.AsyncControlKey  then
-		    bringToFront
-		  end
-		  
-		  if Keyboard.AsyncKeyDown(96) and Keyboard.AsyncControlKey then
-		    bringToFront
-		  end
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub HideApp()
-		  dim p as ProcessMBS
+		  if app.MainWindow <> nil then
+		    app.MainWindow.Close
+		    app.MainWindow = nil
+		    
+		    for i as integer = WindowCount-1 downto 0
+		      window(i).close
+		    next
+		  end if
 		  
-		  p=new ProcessMBS
-		  p.GetCurrentProcess
-		  p.visible = false
-		  
-		  
-		  'HideAppScript
 		End Sub
 	#tag EndMethod
 
@@ -102,7 +113,7 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub LoadProjectFolder(forceSelection as Boolean = false)
+		Sub LoadProjectFolder(forceSelection as Boolean = false, allowInBackground as boolean = false)
 		  if LastBaseFolderPath = "" or forceSelection then
 		    dim ff as FolderItem = SelectFolder
 		    if ff <> nil then
@@ -128,17 +139,34 @@ Inherits Application
 		  
 		  ClassLoader.LoadClassesForProject(CurrentProjectFolder)
 		  
-		  dim ww as new WinAutoFiller
-		  ww.loadpossibilities
-		  ww.ParentWindow = nil
-		  app.MainWindow = ww
-		  ww.show
+		  
+		  OpenNewMainWindow(allowInBackground)
 		  
 		  
 		  
 		  
 		  Exception err
-		    LoadProjectFolder(true)
+		    LoadProjectFolder(true,allowInBackground)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub OpenNewMainWindow(allowInBackground as Boolean = false)
+		  dim ww as WinAutoFiller
+		  
+		  if allowInBackground and app.MainWindow <> nil then
+		    ww = app.MainWindow
+		  else
+		    ww = new WinAutoFiller
+		  end if
+		  
+		  ww.loadpossibilities
+		  ww.ParentWindow = nil
+		  app.MainWindow = ww
+		  
+		  if not allowInBackground then
+		    ww.show
+		  end if
 		End Sub
 	#tag EndMethod
 

@@ -20,7 +20,7 @@ Begin Window WinAutoFiller
    MinimumHeight   =   64
    MinimumWidth    =   64
    Resizeable      =   True
-   Title           =   "#@"
+   Title           =   ""
    Type            =   "7"
    Visible         =   True
    Width           =   278
@@ -29,7 +29,7 @@ Begin Window WinAutoFiller
       AllowFocusRing  =   True
       AllowSpellChecking=   False
       AllowTabs       =   False
-      BackgroundColor =   &c38383800
+      BackgroundColor =   &cFFFFFF00
       Bold            =   False
       DataField       =   ""
       DataSource      =   ""
@@ -168,12 +168,25 @@ End
 
 	#tag Event
 		Sub Open()
-		  dim newStyle As UInt64 = 0 //no titlebar, not resizeable
-		  if self.Resizeable then newStyle = 8 //no titlebar and resizeable
+		  'dim newStyle As UInt64 = 0 //no titlebar, not resizeable
+		  'if self.Resizeable then newStyle = 8 //no titlebar and resizeable
+		  '
+		  'soft declare sub setStyleMask lib "Cocoa.framework" selector "setStyleMask:" (id As Ptr, mask As UInt64)
+		  'setStyleMask(Ptr(self.Handle), newStyle)
 		  
-		  soft declare sub setStyleMask lib "Cocoa.framework" selector "setStyleMask:" (id As Ptr, mask As UInt64)
-		  setStyleMask(Ptr(self.Handle), newStyle)
 		  
+		  
+		  'self.NSWindowMBS.collectionbehavior = NSWindowMBS.NSWindowCollectionBehaviorFullScreenAuxiliary + NSWindowMBS.NSWindowCollectionBehaviorMoveToActiveSpace
+		  self.NSWindowMBS.collectionbehavior = NSWindowMBS.NSWindowCollectionBehaviorFullScreenAuxiliary + NSWindowMBS.NSWindowCollectionBehaviorCanJoinAllSpaces
+		  
+		  
+		  // enable dark mode
+		  dim t as string = NSAppearanceMBS.NSAppearanceNameDarkAqua
+		  dim a as NSAppearanceMBS = NSAppearanceMBS.appearanceNamed(t)
+		  if a <>nil then
+		    NSAppearanceMBS.setCurrentAppearance a
+		    NSAppearanceMBS.setAppearance(self, a)
+		  end if
 		End Sub
 	#tag EndEvent
 
@@ -188,7 +201,7 @@ End
 		      Return false
 		    end if
 		  else
-		    ParentWindow.EDSearch.SetFocus
+		    //ParentWindow.EDSearch.SetFocus //we don't want to do this now that it's a global floating window
 		    self.close
 		    Return true
 		  end if

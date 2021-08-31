@@ -13,13 +13,12 @@ This app will accept a project folder and load the files located in /app/models/
 This is a very rudimentary autocomplete app used for internal purposes. There are many limitations including:
 - It doesn't search any folders besides the main app/models/ folder
 - It's Mac-only but could be modified to work on Windows if you feel like dealing with declares
-- It currently doesn't work smoothly with Mission Control Spaces/full screen
 - There will be many false positives/negatives for method/property/association matches since we didn't spend a ton of time accounting for different formats
 - It's intended for Rails 6.x
 
 ---
 ## To use the compiled app with your Rails project
-1. Download the [compiled Mac App](https://github.com/orangedsoft/RailsAutoCompleteHelper/releases/download/v1.0/RailsAutoCompleteHelper.zip)
+1. Download the compiled Mac App from the [latest GitHub release](https://github.com/orangedsoft/RailsAutoCompleteHelper/releases)
 2. [Annotate gem](https://github.com/ctran/annotate_models) is required in your Rails project so this app can pull property values from the model.rb files.
 3. You'll need to go into System Preferences > Security & Privacy > Privacy > Accessibility, unlock the pane with your system admin password, and drag and drop RailsAutoCompleteHelper.app into the list. You might also have to go back in here and toggle it on and off multiple times since it seems very inconsistent and unreliable.
 4. You might also need to allow System Preferences > Security & Privacy > Privacy > Automation > RailsAutoCompleteHelper > System Events

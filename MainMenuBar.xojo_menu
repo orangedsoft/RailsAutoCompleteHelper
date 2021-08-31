@@ -20,6 +20,18 @@ Begin Menu MainMenuBar
          AutoEnable = True
          Visible = True
       End
+      Begin MenuItem FileReloadCurrentProject
+         SpecialMenu = 0
+         Value = "Reload Current Project"
+         Index = -2147483648
+         Text = "Reload Current Project"
+         ShortcutKey = "R"
+         Shortcut = "Cmd+R"
+         MenuModifier = True
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
       Begin QuitMenuItem FileQuit
          SpecialMenu = 0
          Value = "#App.kFileQuit"
