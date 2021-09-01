@@ -182,6 +182,7 @@ Begin Window WinAutoFiller
       Top             =   11
       Transparent     =   False
       Underline       =   False
+      Value           =   False
       Visible         =   False
       VisualState     =   "0"
       Width           =   50
@@ -190,6 +191,14 @@ End
 #tag EndWindow
 
 #tag WindowCode
+	#tag Event
+		Function CancelClose(appQuitting as Boolean) As Boolean
+		  if app.MainWindow = self then
+		    app.MainWindow = nil
+		  end if
+		End Function
+	#tag EndEvent
+
 	#tag Event
 		Sub Deactivate()
 		  if ParentWindow <> nil then
