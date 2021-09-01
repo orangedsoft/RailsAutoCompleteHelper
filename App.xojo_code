@@ -19,7 +19,7 @@ Inherits Application
 		  MBSRegistration.RegisterMBS
 		  
 		  
-		  // setup hot key
+		  // set up hot key
 		  dim keyCode as integer = HotKeyMBS.KeyCodeForText("grave")
 		  HotKeyWatcher = new HotKeyMBS(keyCode, HotKeyMBS.ControlKey)
 		  AddHandler HotKeyWatcher.KeyDown, WeakAddressOf BringToFront
@@ -32,7 +32,11 @@ Inherits Application
 		  if myProcess.TransformProcessType(myProcess.kProcessTransformToUIElementApplication) = 0 then
 		  end if
 		  
-		  
+		  // set up reload timer
+		  AutoReloadTimer = new timer
+		  AutoReloadTimer.Period = 180000//3 minutes
+		  AutoReloadTimer.RunMode = timer.RunModes.Multiple
+		  AddHandler AutoReloadTimer.action, AddressOf ReloadFromTimer
 		  
 		  
 		  
@@ -62,7 +66,7 @@ Inherits Application
 
 	#tag MenuHandler
 		Function filereloadCurrentProject() As Boolean Handles filereloadCurrentProject.Action
-			
+			LoadProjectFolder(false,true)
 			Return True
 			
 		End Function
@@ -106,7 +110,18 @@ Inherits Application
 		  
 		  if ff <> nil and ff.Exists then
 		    dim textin as TextInputStream = TextInputStream.Open(ff)
-		    LastBaseFolderPath = textin.readall
+		    dim s as string = textin.ReadAll
+		    
+		    if s.instr("<LastBaseFolderPath>") = 0 then
+		      //old save format
+		      LastBaseFolderPath = s
+		      SearchDeep = true
+		    else
+		      //new save format
+		      LastBaseFolderPath = s.NthField("<LastBaseFolderPath>",2)
+		      SearchDeep = s.NthField("<SearchDeep>",2) = "true"
+		    end if
+		    
 		    textin.close
 		  end if
 		End Sub
@@ -134,12 +149,14 @@ Inherits Application
 		  
 		  
 		  for i as integer = app.WindowCount - 1 downto 0
-		    window(i).close
+		    if allowInBackground and window(i) isa WinAutoFiller and WinAutoFiller(window(i)).searchDepth = 0 then
+		      //we can keep the main window open in this situation
+		    else
+		      window(i).close
+		    end if
 		  next
 		  
 		  ClassLoader.LoadClassesForProject(CurrentProjectFolder)
-		  
-		  
 		  OpenNewMainWindow(allowInBackground)
 		  
 		  
@@ -154,7 +171,11 @@ Inherits Application
 		Sub OpenNewMainWindow(allowInBackground as Boolean = false)
 		  dim ww as WinAutoFiller
 		  
-		  if allowInBackground and app.MainWindow <> nil then
+		  if allowInBackground and app.MainWindow = nil then
+		    Return
+		  end if
+		  
+		  if app.MainWindow <> nil then
 		    ww = app.MainWindow
 		  else
 		    ww = new WinAutoFiller
@@ -182,6 +203,12 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub ReloadFromTimer(sender as object = nil)
+		  LoadProjectFolder(false,true)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub SavePrefs()
 		  
 		  
@@ -192,7 +219,8 @@ Inherits Application
 		  end if
 		  
 		  dim textout as TextOutputStream = TextOutputStream.Open(ff)
-		  textout.Write LastBaseFolderPath
+		  textout.Write "<LastBaseFolderPath>"+LastBaseFolderPath+"<LastBaseFolderPath>"
+		  textout.Write "<SearchDeep>"+if(SearchDeep,"true","false")+"<SearchDeep>"
 		  textout.Close
 		End Sub
 	#tag EndMethod
@@ -225,6 +253,10 @@ Inherits Application
 
 
 	#tag Property, Flags = &h0
+		AutoReloadTimer As timer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		CurrentProjectFolder As FolderItem
 	#tag EndProperty
 
@@ -246,6 +278,10 @@ Inherits Application
 
 	#tag Property, Flags = &h1
 		Protected myDelayedStrokesTimer As Timer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		SearchDeep As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

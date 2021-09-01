@@ -152,7 +152,39 @@ Begin Window WinAutoFiller
       Underline       =   False
       Value           =   "- Project"
       Visible         =   True
-      Width           =   263
+      Width           =   207
+   End
+   Begin CheckBox CHDeep
+      AllowAutoDeactivate=   True
+      Bold            =   False
+      Caption         =   "deep"
+      DataField       =   ""
+      DataSource      =   ""
+      Enabled         =   True
+      FontName        =   "System"
+      FontSize        =   10.0
+      FontUnit        =   0
+      Height          =   20
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Italic          =   False
+      Left            =   220
+      LockBottom      =   False
+      LockedInPosition=   False
+      LockLeft        =   False
+      LockRight       =   True
+      LockTop         =   True
+      Scope           =   0
+      TabIndex        =   3
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Tooltip         =   "Search for concerns/etc in subfolders of your /app/models/ folder"
+      Top             =   11
+      Transparent     =   False
+      Underline       =   False
+      Visible         =   False
+      VisualState     =   "0"
+      Width           =   50
    End
 End
 #tag EndWindow
@@ -229,6 +261,23 @@ End
 
 	#tag Method, Flags = &h0
 		Sub ConfirmSelection()
+		  
+		  
+		  if Keyboard.AsyncShiftKey then
+		    //open the file in vscode
+		    if LBPossible.listindex <> -1 and LBPossible.CellTagAt(LBPossible.SelectedRowIndex,0) <> "-" then
+		      dim sh as new shell
+		      dim shellCode as string = "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code -g "+LBPossible.CellTagAt(LBPossible.SelectedRowIndex,0)
+		      sh.Execute(shellCode)
+		    end if
+		    Return
+		  end if
+		  
+		  
+		  
+		  
+		  
+		  
 		  if self.ChildWindow <> nil then
 		    self.ChildWindow.Close
 		    self.ChildWindow = nil
@@ -250,11 +299,11 @@ End
 		    ww.show
 		    
 		  case 1
+		    //type the text into the previous editor
 		    dim result as string = EDSearch.Text
 		    app.StartClearAll(false)
 		    app.HideApp
 		    app.QueueDelayedKeystrokes(result)//this will attempt to hide app and send to frontmost app
-		    
 		  end select
 		  
 		  
@@ -263,9 +312,16 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadPossibilities()
+		  IsLoading = true
+		  
 		  redim possibilities(-1)
 		  redim possibilitiesInfo(-1)
+		  redim possibilitiesDefinitions(-1)
 		  
+		  if searchDepth = 0 then
+		    CHDeep.Visible = true
+		    CHDeep.value = app.SearchDeep
+		  end if
 		  
 		  if searchDepthClass <> "" then
 		    LBFolderName.Text = searchDepthClass
@@ -278,6 +334,7 @@ End
 		    for i as integer = 0 to UBound(ClassLoader.CurrentClasses)
 		      possibilities.Append(ClassLoader.CurrentClasses(i).ClassName)
 		      possibilitiesInfo.Append("")
+		      possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).ClassDefinitionLocation)
 		    next
 		  case 1
 		    for i as integer = 0 to UBound(ClassLoader.CurrentClasses)
@@ -285,6 +342,7 @@ End
 		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundProperties)
 		          possibilities.Append(ClassLoader.CurrentClasses(i).FoundProperties(j).Left)
 		          possibilitiesInfo.Append(ClassLoader.CurrentClasses(i).FoundProperties(j).Right)
+		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("property::"+cstr(j),"-"))
 		        next
 		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundMethods)
 		          if left(ClassLoader.CurrentClasses(i).FoundMethods(j),5) = "self." then
@@ -294,22 +352,26 @@ End
 		            possibilities.Append(ClassLoader.CurrentClasses(i).FoundMethods(j))
 		            possibilitiesInfo.Append("method")
 		          end if
+		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("method::"+cstr(j),"-"))
 		        next
 		        
 		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundAssociations)
 		          possibilities.Append(ClassLoader.CurrentClasses(i).FoundAssociations(j).Left)
 		          possibilitiesInfo.Append(ClassLoader.CurrentClasses(i).FoundAssociations(j).Right)
+		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("association::"+cstr(j),"-"))
 		        next
 		        
 		        exit
 		      end if
 		    next
-		    
-		    
 		  end select
 		  
-		  possibilities.SortWith(possibilitiesInfo)
+		  possibilities.SortWith(possibilitiesInfo,possibilitiesDefinitions)
 		  SearchPossibilities
+		  
+		  
+		  Finally
+		    IsLoading = false
 		End Sub
 	#tag EndMethod
 
@@ -335,6 +397,7 @@ End
 		    if sl = 0 or possibilities(i).left(sl) = CurrentSearch then
 		      LBPossible.AddRow(possibilities(i),CleanForAssociations(possibilitiesInfo(i)))
 		      LBPossible.RowTag(LBPossible.lastindex) = possibilitiesInfo(i)
+		      LBPossible.CellTagAt(LBPossible.lastindex,0) = possibilitiesDefinitions(i)
 		      
 		      if hasExpandedFirstPossibility = false and sl > 0 then
 		        hasExpandedFirstPossibility = true
@@ -376,6 +439,10 @@ End
 
 	#tag Property, Flags = &h0
 		IsConductingSearch As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private IsLoading As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -421,6 +488,10 @@ End
 
 	#tag Property, Flags = &h0
 		possibilities(-1) As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		possibilitiesDefinitions(-1) As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -575,6 +646,17 @@ End
 		    ConfirmSelection
 		  end if
 		End Function
+	#tag EndEvent
+#tag EndEvents
+#tag Events CHDeep
+	#tag Event
+		Sub Action()
+		  if IsLoading = false then
+		    app.SearchDeep = me.value
+		    app.SavePrefs
+		    app.LoadProjectFolder(false,true)
+		  end if
+		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag ViewBehavior
