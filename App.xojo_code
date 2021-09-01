@@ -97,7 +97,11 @@ Inherits Application
 		    for i as integer = WindowCount-1 downto 0
 		      window(i).close
 		    next
+		    
+		    sendActivateCommand
 		  end if
+		  
+		  
 		  
 		End Sub
 	#tag EndMethod
