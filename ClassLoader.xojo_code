@@ -1,5 +1,6 @@
 #tag Class
 Protected Class ClassLoader
+Implements Possibility
 	#tag Method, Flags = &h0
 		Function DoLoad(withFile as FolderItem) As Boolean
 		  
@@ -12,7 +13,6 @@ Protected Class ClassLoader
 		  me.ClassDefinitionLocation = withFile.ShellPath
 		  
 		  
-		  DefinitionLocations = new Dictionary
 		  dim associationTypes(-1) as string = split("belongs_to,has_many,has_one,has_and_belongs_to_many",",")
 		  
 		  dim emptyLinesRemaining as integer = 0
@@ -54,26 +54,19 @@ Protected Class ClassLoader
 		          Continue
 		        end if
 		        
-		        dim propName as string= mid(ll,4).nthfield(" ",1)
-		        dim propType as string = nthfield(ll,":",2).nthfield(" ",1).nthfield("(",1)
-		        
-		        FoundProperties.Append(new pair(propName, propType))
-		        DefinitionLocations.Value("property::"+cstr(FoundProperties.Ubound)) = withFile.ShellPath+":"+cstr(linePosition)
-		        
+		        MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeProperty,withFile,linePosition,ll))
 		      case 3
 		        
 		        ll = trim(ll)
+		        
 		        if ll.left(4) = "def " then
 		          //it's a method
-		          FoundMethods.Append(ll.mid(5))
-		          DefinitionLocations.Value("method::"+cstr(FoundMethods.Ubound)) = withFile.ShellPath+":"+cstr(linePosition)
+		          MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeMethod,withFile,linePosition,ll))
 		        else
 		          //check if it's an association
 		          for aa as integer = 0 to UBound(associationTypes)
 		            if ll.left(associationTypes(aa).Length) = associationTypes(aa) then
-		              dim ascName as string = nthfield(ll,":",2).nthfield(",",1).trim
-		              FoundAssociations.Append(new pair(ascName,"@$"+associationTypes(aa)))
-		              DefinitionLocations.Value("association::"+cstr(FoundAssociations.Ubound)) = withFile.ShellPath+":"+cstr(linePosition)
+		              MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeAssociation,withFile,linePosition,ll,associationTypes(aa)))
 		              exit
 		            end if
 		          next
@@ -126,6 +119,50 @@ Protected Class ClassLoader
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub possibility_AddToListBox(lb as listbox)
+		  // Part of the Possibility interface.
+		  
+		  lb.AddRow(ClassName)
+		  lb.RowTag(lb.lastindex) = me
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function possibility_GetDefinitionLocation() As String
+		  // Part of the Possibility interface.
+		  
+		  Return ClassDefinitionLocation
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function possibility_GetName() As String
+		  // Part of the Possibility interface.
+		  
+		  Return ClassName
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function possibility_GetTextColor(defaultColor as color) As color
+		  // Part of the Possibility interface.
+		  
+		  Return defaultColor
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function possibility_MatchesSearch(s as String) As Boolean
+		  // Part of the Possibility interface.
+		  
+		  dim sl as integer = s.Length
+		  if sl = 0 or ClassName.left(sl) = s then
+		    Return true
+		  end if
+		End Function
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		#tag Note
@@ -142,46 +179,8 @@ Protected Class ClassLoader
 		Shared CurrentClasses(-1) As ClassLoader
 	#tag EndProperty
 
-	#tag ComputedProperty, Flags = &h0
-		#tag Getter
-			Get
-			  if mDefinitionLocations = nil then
-			    mDefinitionLocations = new Dictionary
-			  end if
-			  
-			  Return mDefinitionLocations
-			End Get
-		#tag EndGetter
-		#tag Setter
-			Set
-			  mDefinitionLocations = value
-			End Set
-		#tag EndSetter
-		DefinitionLocations As Dictionary
-	#tag EndComputedProperty
-
 	#tag Property, Flags = &h0
-		FoundAssociations(-1) As pair
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		FoundMethods(-1) As string
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		#tag Note
-			left = name, : right= type
-		#tag EndNote
-		FoundProperties(-1) As Pair
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		#tag Note
-			
-			key = "method/property/association::index"
-			value = filepath:line
-		#tag EndNote
-		Private mDefinitionLocations As Dictionary
+		MyAttributes(-1) As ClassAttribute
 	#tag EndProperty
 
 
@@ -228,6 +227,14 @@ Protected Class ClassLoader
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ClassName"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="ClassDefinitionLocation"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""

@@ -250,19 +250,7 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function CleanForAssociations(s as string) As string
-		  
-		  if left(s,2) = "@$" then
-		    Return mid(s,3)
-		  else
-		    Return s
-		  end if
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub ClearAll()
-		  
 		  CurrentSearch = ""
 		  EDSearch.SetFocus
 		End Sub
@@ -274,17 +262,15 @@ End
 		  
 		  if Keyboard.AsyncShiftKey then
 		    //open the file in vscode
-		    if LBPossible.listindex <> -1 and LBPossible.CellTagAt(LBPossible.SelectedRowIndex,0) <> "-" then
+		    try
+		      dim pp as Possibility = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
 		      dim sh as new shell
-		      dim shellCode as string = "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code -g "+LBPossible.CellTagAt(LBPossible.SelectedRowIndex,0)
+		      dim shellCode as string = "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code -g "+pp.possibility_GetDefinitionLocation
 		      sh.Execute(shellCode)
-		    end if
+		    catch
+		    end try
 		    Return
 		  end if
-		  
-		  
-		  
-		  
 		  
 		  
 		  if self.ChildWindow <> nil then
@@ -324,8 +310,7 @@ End
 		  IsLoading = true
 		  
 		  redim possibilities(-1)
-		  redim possibilitiesInfo(-1)
-		  redim possibilitiesDefinitions(-1)
+		  dim possibilitiesNames(-1) as string
 		  
 		  if searchDepth = 0 then
 		    CHDeep.Visible = true
@@ -340,34 +325,16 @@ End
 		  
 		  select case searchDepth
 		  case 0
-		    for i as integer = 0 to UBound(ClassLoader.CurrentClasses)
-		      possibilities.Append(ClassLoader.CurrentClasses(i).ClassName)
-		      possibilitiesInfo.Append("")
-		      possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).ClassDefinitionLocation)
+		    for each cc as ClassLoader in ClassLoader.CurrentClasses
+		      possibilities.Append(cc)
+		      possibilitiesNames.Append(cc.possibility_GetName)
 		    next
 		  case 1
-		    for i as integer = 0 to UBound(ClassLoader.CurrentClasses)
-		      if ClassLoader.CurrentClasses(i).ClassName = searchDepthClass then
-		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundProperties)
-		          possibilities.Append(ClassLoader.CurrentClasses(i).FoundProperties(j).Left)
-		          possibilitiesInfo.Append(ClassLoader.CurrentClasses(i).FoundProperties(j).Right)
-		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("property::"+cstr(j),"-"))
-		        next
-		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundMethods)
-		          if left(ClassLoader.CurrentClasses(i).FoundMethods(j),5) = "self." then
-		            possibilities.Append(ClassLoader.CurrentClasses(i).FoundMethods(j).mid(6))
-		            possibilitiesInfo.Append("selfmethod")
-		          else
-		            possibilities.Append(ClassLoader.CurrentClasses(i).FoundMethods(j))
-		            possibilitiesInfo.Append("method")
-		          end if
-		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("method::"+cstr(j),"-"))
-		        next
-		        
-		        for j as integer = 0 to UBound(ClassLoader.CurrentClasses(i).FoundAssociations)
-		          possibilities.Append(ClassLoader.CurrentClasses(i).FoundAssociations(j).Left)
-		          possibilitiesInfo.Append(ClassLoader.CurrentClasses(i).FoundAssociations(j).Right)
-		          possibilitiesDefinitions.Append(ClassLoader.CurrentClasses(i).DefinitionLocations.Lookup("association::"+cstr(j),"-"))
+		    for each cc as ClassLoader in ClassLoader.CurrentClasses
+		      if cc.ClassName = searchDepthClass then
+		        for each ct as ClassAttribute in cc.MyAttributes
+		          possibilities.Append(ct)
+		          possibilitiesNames.Append(ct.possibility_GetName)
 		        next
 		        
 		        exit
@@ -375,7 +342,7 @@ End
 		    next
 		  end select
 		  
-		  possibilities.SortWith(possibilitiesInfo,possibilitiesDefinitions)
+		  possibilitiesNames.SortWith(possibilities)
 		  SearchPossibilities
 		  
 		  
@@ -389,7 +356,6 @@ End
 		  dim WantsHeight as integer = LBPossible.RowCount * LBPossible.RowHeight + LBPossible.top + 12
 		  dim maxHeight as integer = screen(0).AvailableHeight - self.top 
 		  self.height = if(WantsHeight > maxHeight, maxHeight, WantsHeight)
-		  
 		End Sub
 	#tag EndMethod
 
@@ -402,22 +368,19 @@ End
 		  dim sl as integer = CurrentSearch.Length
 		  dim hasExpandedFirstPossibility as Boolean
 		  
-		  for i as integer = 0 to UBound(possibilities)
-		    if sl = 0 or possibilities(i).left(sl) = CurrentSearch then
-		      LBPossible.AddRow(possibilities(i),CleanForAssociations(possibilitiesInfo(i)))
-		      LBPossible.RowTag(LBPossible.lastindex) = possibilitiesInfo(i)
-		      LBPossible.CellTagAt(LBPossible.lastindex,0) = possibilitiesDefinitions(i)
+		  for each pp as Possibility in possibilities
+		    if pp.possibility_MatchesSearch(CurrentSearch) then
+		      pp.possibility_AddToListBox(LBPossible)
 		      
 		      if hasExpandedFirstPossibility = false and sl > 0 then
 		        hasExpandedFirstPossibility = true
-		        EDSearch.Text = possibilities(i)
+		        EDSearch.Text = pp.possibility_GetName
 		        EDSearch.SelectionStart = sl
 		        EDSearch.SelectionLength = EDSearch.text.length - edsearch.SelectionStart
 		        LBPossible.listindex = LBPossible.lastindex
 		      end if
 		    end if
 		  next
-		  
 		  
 		  ResizeWindowForPossibilities
 		  IsConductingSearch = false
@@ -496,15 +459,7 @@ End
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0
-		possibilities(-1) As String
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		possibilitiesDefinitions(-1) As String
-	#tag EndProperty
-
-	#tag Property, Flags = &h0
-		possibilitiesInfo(-1) As String
+		possibilities(-1) As Possibility
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -592,9 +547,6 @@ End
 		    g.forecolor = rgb(20,20,20)
 		  end if
 		  g.FillRectangle 0,0,g.Width,g.Height
-		  
-		  
-		  
 		  Return true
 		End Function
 	#tag EndEvent
@@ -604,20 +556,8 @@ End
 		  g.forecolor = rgb(240,240,240)
 		  
 		  if row > -1 and row < me.listcount and column > -1 and column < me.ColumnCount then
-		    if searchDepth > 0 then
-		      
-		      if left(me.RowTagAt(row),2) = "@$" then
-		        g.forecolor = rgb(189,115,211)
-		      else
-		        select case me.RowTagAt(row)
-		        case "method","selfmethod"
-		          g.forecolor = rgb(179,133,90)
-		        else
-		          //property
-		          g.forecolor = rgb(151,203,254)
-		        end select
-		      end if
-		      
+		    if searchDepth > 0 and me.RowTagAt(row) isa Possibility then
+		      g.forecolor = Possibility(me.RowTagAt(row)).possibility_GetTextColor(g.forecolor)
 		    end if
 		  end if
 		  
@@ -625,7 +565,6 @@ End
 	#tag EndEvent
 	#tag Event
 		Sub Change()
-		  
 		  if IsConductingSearch = false and me.listindex <> -1 then
 		    EDSearch.Text = me.cell(me.listindex,0)
 		  end if
