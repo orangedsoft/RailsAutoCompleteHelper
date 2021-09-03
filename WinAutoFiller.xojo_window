@@ -602,7 +602,7 @@ End
 		  if IsLoading = false then
 		    app.SearchDeep = me.value
 		    app.SavePrefs
-		    app.LoadProjectFolder(false,true)
+		    app.LoadProjectFolder(false,1)
 		  end if
 		End Sub
 	#tag EndEvent

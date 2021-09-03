@@ -66,7 +66,7 @@ Inherits Application
 
 	#tag MenuHandler
 		Function filereloadCurrentProject() As Boolean Handles filereloadCurrentProject.Action
-			LoadProjectFolder(false,true)
+			LoadProjectFolder(false,1)
 			Return True
 			
 		End Function
@@ -132,7 +132,7 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub LoadProjectFolder(forceSelection as Boolean = false, allowInBackground as boolean = false)
+		Sub LoadProjectFolder(forceSelection as Boolean = false, allowInBackground as integer = 0)
 		  if LastBaseFolderPath = "" or forceSelection then
 		    dim ff as FolderItem = SelectFolder
 		    if ff <> nil then
@@ -151,17 +151,18 @@ Inherits Application
 		  SavePrefs
 		  
 		  
-		  
-		  for i as integer = app.WindowCount - 1 downto 0
-		    if allowInBackground and window(i) isa WinAutoFiller and WinAutoFiller(window(i)).searchDepth = 0 then
-		      //we can keep the main window open in this situation
-		    else
-		      window(i).close
-		    end if
-		  next
+		  if allowInBackground < 2 then
+		    for i as integer = app.WindowCount - 1 downto 0
+		      if allowInBackground=1 and window(i) isa WinAutoFiller and WinAutoFiller(window(i)).searchDepth = 0 then
+		        //we can keep the main window open in this situation
+		      else
+		        window(i).close
+		      end if
+		    next
+		  end if
 		  
 		  ClassLoader.LoadClassesForProject(CurrentProjectFolder)
-		  OpenNewMainWindow(allowInBackground)
+		  OpenNewMainWindow(allowInBackground>0)
 		  
 		  
 		  
@@ -173,12 +174,11 @@ Inherits Application
 
 	#tag Method, Flags = &h0
 		Sub OpenNewMainWindow(allowInBackground as Boolean = false)
-		  dim ww as WinAutoFiller
-		  
 		  if allowInBackground and app.MainWindow = nil then
 		    Return
 		  end if
 		  
+		  dim ww as WinAutoFiller
 		  if app.MainWindow <> nil then
 		    ww = app.MainWindow
 		  else
@@ -208,7 +208,7 @@ Inherits Application
 
 	#tag Method, Flags = &h0
 		Sub ReloadFromTimer(sender as object = nil)
-		  LoadProjectFolder(false,true)
+		  LoadProjectFolder(false,2)
 		End Sub
 	#tag EndMethod
 
