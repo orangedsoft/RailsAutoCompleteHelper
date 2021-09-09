@@ -28,6 +28,8 @@ Implements Possibility
 		    extraInfo.value(ExtraInfoAssociationType) = extra
 		    
 		  end select
+		  
+		  me.NameVariants = ClassLoader.GetVariantsForName(AttributeName)
 		End Sub
 	#tag EndMethod
 
@@ -94,6 +96,12 @@ Implements Possibility
 		  if sl = 0 or AttributeName.left(sl) = s then
 		    Return true
 		  end if
+		  
+		  for i as integer = 0 to UBound(NameVariants)
+		    if NameVariants(i).Left(sl) = s then
+		      Return true
+		    end if
+		  next
 		End Function
 	#tag EndMethod
 
@@ -133,6 +141,13 @@ Implements Possibility
 			//only used for ClassAttribute.AttibuteType = TypeProperty
 		#tag EndNote
 		Private mExtraInfo As Dictionary
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		#tag Note
+			used to cache different typings of name for search purposes
+		#tag EndNote
+		Private NameVariants(-1) As String
 	#tag EndProperty
 
 
@@ -195,6 +210,30 @@ Implements Possibility
 			InitialValue="0"
 			Type="Integer"
 			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AttributeName"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="AttributeType"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="DefinitionLocation"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

@@ -236,6 +236,7 @@ End
 		Function AttemptCloseForParent(theKeyCausingAttempt as integer = 0) As Boolean
 		  if ParentWindow = nil then
 		    if theKeyCausingAttempt = 27 then //escap only to close
+		      app.ClearStoredInitialSearch
 		      app.HideApp
 		      Return true
 		    else
@@ -258,6 +259,7 @@ End
 
 	#tag Method, Flags = &h0
 		Sub ConfirmSelection()
+		  LastConfirmedSearch = mCurrentSearch
 		  
 		  
 		  if Keyboard.AsyncShiftKey then
@@ -296,7 +298,7 @@ End
 		  case 1
 		    //type the text into the previous editor
 		    dim result as string = EDSearch.Text
-		    app.StartClearAll(false)
+		    app.StartClearAll(false,true)
 		    app.HideApp
 		    app.QueueDelayedKeystrokes(result)//this will attempt to hide app and send to frontmost app
 		  end select
@@ -415,6 +417,10 @@ End
 
 	#tag Property, Flags = &h21
 		Private IsLoading As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		LastConfirmedSearch As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

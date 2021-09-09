@@ -76,9 +76,21 @@ Implements Possibility
 		    end if
 		  loop
 		  
-		  
+		  me.NameVariants = GetVariantsForName(me.ClassName)
 		  tt.Close
 		  Return true
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Shared Function GetVariantsForName(n as string) As string()
+		  
+		  dim s(-1) as string
+		  s.Append(n.ReplaceAll("_",""))
+		  s.Append(n.ReplaceAll(" ",""))
+		  
+		  
+		  Return s
 		End Function
 	#tag EndMethod
 
@@ -160,6 +172,12 @@ Implements Possibility
 		  if sl = 0 or ClassName.left(sl) = s then
 		    Return true
 		  end if
+		  
+		  for i as integer = 0 to UBound(NameVariants)
+		    if NameVariants(i).Left(sl) = s then
+		      Return true
+		    end if
+		  next
 		End Function
 	#tag EndMethod
 
@@ -181,6 +199,13 @@ Implements Possibility
 
 	#tag Property, Flags = &h0
 		MyAttributes(-1) As ClassAttribute
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		#tag Note
+			used to cache different typings of name for search purposes
+		#tag EndNote
+		Private NameVariants(-1) As String
 	#tag EndProperty
 
 

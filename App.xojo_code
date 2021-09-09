@@ -39,6 +39,8 @@ Inherits Application
 		  AddHandler AutoReloadTimer.action, AddressOf ReloadFromTimer
 		  
 		  
+		  DelayToClearFirstWindow = 20000//20 seconds
+		  
 		  
 		  LoadPrefs
 		  LoadProjectFolder
@@ -85,6 +87,12 @@ Inherits Application
 		  p=new ProcessMBS
 		  p.GetCurrentProcess
 		  p.SetFrontProcessWithOptions 0
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub ClearStoredInitialSearch(sender as object = nil)
+		  StoredInitialSearch = ""
 		End Sub
 	#tag EndMethod
 
@@ -192,6 +200,10 @@ Inherits Application
 		  if not allowInBackground then
 		    ww.show
 		  end if
+		  
+		  if StoredInitialSearch <> "" then
+		    ww.CurrentSearch = StoredInitialSearch
+		  end if
 		End Sub
 	#tag EndMethod
 
@@ -236,7 +248,17 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub StartClearAll(andShow as Boolean = true)
+		Sub StartClearAll(andShow as Boolean = true, canDelayMainWindow as Boolean = false)
+		  if canDelayMainWindow and MainWindow <> nil then
+		    app.StoredInitialSearch = MainWindow.LastConfirmedSearch
+		    
+		    dim tt as new Timer
+		    tt.RunMode = timer.RunModes.Multiple
+		    tt.Period = app.DelayToClearFirstWindow
+		    AddHandler tt.action, AddressOf ClearStoredInitialSearch
+		    myDelayedClearTimer = tt
+		  end if
+		  
 		  
 		  for i as integer = 0 to WindowCount - 1
 		    if Application.window(i) <> MainWindow then
@@ -264,6 +286,14 @@ Inherits Application
 		CurrentProjectFolder As FolderItem
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		#tag Note
+			the amount of time after selecting an item for autocomplete before the entry in the first window will be cleared.
+			delaying makes it easier to autocomplete from the same model multiple times
+		#tag EndNote
+		DelayToClearFirstWindow As Integer
+	#tag EndProperty
+
 	#tag Property, Flags = &h1
 		Protected HotKeyWatcher As HotKeyMBS
 	#tag EndProperty
@@ -274,6 +304,10 @@ Inherits Application
 
 	#tag Property, Flags = &h0
 		MainWindow As WinAutoFiller
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private myDelayedClearTimer As Timer
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
@@ -290,6 +324,13 @@ Inherits Application
 
 	#tag Property, Flags = &h0
 		ShortCutTimer As timer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		#tag Note
+			this will be used to fill the main window with a search when opened
+		#tag EndNote
+		Private StoredInitialSearch As String
 	#tag EndProperty
 
 
