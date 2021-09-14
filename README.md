@@ -8,6 +8,7 @@ This app will accept a project folder and load the files located in /app/models/
 - Methods and self.methods, found by lines that begin with "def "
 - Properties, found by the schema information produced by the Annotate gem
 - Assocations, found by lines beginning with the various Rails association types
+- Scopes, found by lines beginning with "scope "
 
 # **Disclaimer**
 This is a very rudimentary autocomplete app used for internal purposes. There are many limitations including:
