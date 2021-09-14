@@ -27,6 +27,10 @@ Implements Possibility
 		    AttributeName = nthfield(ll,":",2).nthfield(",",1).trim
 		    extraInfo.value(ExtraInfoAssociationType) = extra
 		    
+		  case TypeScope
+		    
+		    AttributeName = nthfield(ll,":",2).nthfield(",",1).trim
+		    
 		  end select
 		  
 		  me.NameVariants = ClassLoader.GetVariantsForName(AttributeName)
@@ -48,6 +52,8 @@ Implements Possibility
 		    extra = "method"
 		  case TypeSelfMethod
 		    extra = "self.method"
+		  case TypeScope
+		    extra = "scope"
 		  end select
 		  
 		  lb.AddRow(AttributeName, extra)
@@ -82,6 +88,8 @@ Implements Possibility
 		    Return rgb(151,203,254)
 		  case TypeMethod,TypeSelfMethod
 		    Return rgb(179,133,90)
+		  case TypeScope
+		    return rgb(107,184,86)
 		  end select
 		  
 		  Return defaultColor
@@ -164,6 +172,9 @@ Implements Possibility
 	#tag EndConstant
 
 	#tag Constant, Name = TypeProperty, Type = String, Dynamic = False, Default = \"TypeProperty", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = TypeScope, Type = String, Dynamic = False, Default = \"TypeScope", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = TypeSelfMethod, Type = String, Dynamic = False, Default = \"TypeSelfMethod", Scope = Public

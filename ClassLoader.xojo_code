@@ -62,6 +62,9 @@ Implements Possibility
 		        if ll.left(4) = "def " then
 		          //it's a method
 		          MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeMethod,withFile,linePosition,ll))
+		        elseif ll.left(6) = "scope " then
+		          //it's a scope
+		          MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeScope,withFile,linePosition,ll))
 		        else
 		          //check if it's an association
 		          for aa as integer = 0 to UBound(associationTypes)

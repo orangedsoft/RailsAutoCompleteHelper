@@ -890,4 +890,12 @@ End
 		Type="String"
 		EditorType="MultiLineEditor"
 	#tag EndViewProperty
+	#tag ViewProperty
+		Name="LastConfirmedSearch"
+		Visible=false
+		Group="Behavior"
+		InitialValue=""
+		Type="String"
+		EditorType=""
+	#tag EndViewProperty
 #tag EndViewBehavior
