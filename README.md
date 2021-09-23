@@ -30,7 +30,9 @@ This is a very rudimentary autocomplete app used for internal purposes. There ar
 7. **Press Escape** a bunch to hide the app.
 8. **Press Command-1** while the app is active to clear all input and start you with a blank field.
 9. **Press Command-R** to reload all models/functions/properties/associations for the project. The app will automatically do this every 3 minutes.
-8. **Press Shift-Return** with an item selected to open its definition file in VSCode, as long as you have the [VSCode CLI](https://code.visualstudio.com/docs/editor/command-line) installed.
+10. **Press Shift-Return** with an item selected to open its definition file in VSCode, as long as you have the [VSCode CLI](https://code.visualstudio.com/docs/editor/command-line) installed.
+11. **Press Command-N** to open the abbreviations editing window. Abbreviation sets are shown along with your models, and can be used to group and autocomplete abbreviations.
+12. **Press Command-O** to change the current directory of abbreviation sets. This needs to be set in order to add abbreviations as they are all saved to text files. You can keep multiple directories with different groups of abbreviation sets for different purposes.
 
 ---
 ## Requirements to modify/build the code in this repository
