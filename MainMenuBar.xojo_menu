@@ -32,6 +32,15 @@ Begin Menu MainMenuBar
          AutoEnable = True
          Visible = True
       End
+      Begin MenuItem UntitledSeparator
+         SpecialMenu = 0
+         Value = "-"
+         Index = -2147483648
+         Text = "-"
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
       Begin QuitMenuItem FileQuit
          SpecialMenu = 0
          Value = "#App.kFileQuit"
@@ -146,6 +155,49 @@ Begin Menu MainMenuBar
          Text = "Clear All"
          ShortcutKey = "1"
          Shortcut = "Cmd+1"
+         MenuModifier = True
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
+   End
+   Begin MenuItem AbbreviationsMenu
+      SpecialMenu = 0
+      Value = "Abbreviations"
+      Index = -2147483648
+      Text = "Abbreviations"
+      AutoEnabled = True
+      AutoEnable = True
+      Visible = True
+      Begin MenuItem AbbreviationsOpenAbbreviationsFolder
+         SpecialMenu = 0
+         Value = "Open Abbreviations Folder..."
+         Index = -2147483648
+         Text = "Open Abbreviations Folder..."
+         ShortcutKey = "O"
+         Shortcut = "Cmd+Option+O"
+         MenuModifier = True
+         MacOptionKey = True
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
+      Begin MenuItem UntitledSeparator0
+         SpecialMenu = 0
+         Value = "-"
+         Index = -2147483648
+         Text = "-"
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
+      Begin MenuItem AbbreviationsEditAbbreviation
+         SpecialMenu = 0
+         Value = "Edit Abbreviations..."
+         Index = -2147483648
+         Text = "Edit Abbreviations..."
+         ShortcutKey = "N"
+         Shortcut = "Cmd+N"
          MenuModifier = True
          AutoEnabled = True
          AutoEnable = True

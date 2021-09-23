@@ -67,7 +67,7 @@ Begin Window WinAutoFiller
       Visible         =   True
       Width           =   263
    End
-   Begin Listbox LBPossible
+   Begin LBPossibilityDisplayer LBPossible
       AllowAutoDeactivate=   True
       AllowAutoHideScrollbars=   True
       AllowExpandableRows=   False
@@ -297,7 +297,12 @@ End
 		    
 		  case 1
 		    //type the text into the previous editor
-		    dim result as string = EDSearch.Text
+		    dim result as string
+		    if IsForAbbreviations and LBPossible.SelectedRowIndex <> -1 then
+		      result = ClassAttribute(LBPossible.RowTagAt(LBPossible.SelectedRowIndex)).ExtraInfo.Lookup("content","")
+		    else
+		      result = EDSearch.Text
+		    end if
 		    app.StartClearAll(false,true)
 		    app.HideApp
 		    app.QueueDelayedKeystrokes(result)//this will attempt to hide app and send to frontmost app
@@ -334,6 +339,10 @@ End
 		  case 1
 		    for each cc as ClassLoader in ClassLoader.CurrentClasses
 		      if cc.ClassName = searchDepthClass then
+		        if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) then
+		          SetupForAbbreviations
+		        end if
+		        
 		        for each ct as ClassAttribute in cc.MyAttributes
 		          possibilities.Append(ct)
 		          possibilitiesNames.Append(ct.possibility_GetName)
@@ -389,6 +398,14 @@ End
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub SetupForAbbreviations()
+		  IsForAbbreviations = true
+		  LBPossible.DefaultRowHeight = 40
+		  LBPossible.ColumnWidths = "*,0"
+		End Sub
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		ChildWindow As WinAutoFiller
@@ -413,6 +430,10 @@ End
 
 	#tag Property, Flags = &h0
 		IsConductingSearch As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		IsForAbbreviations As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -453,8 +474,10 @@ End
 			    self.top = mParentWindow.top
 			    self.Width = 390
 			    
-			    LBPossible.ColumnCount = 2
-			    LBPossible.ColumnWidths = "*,90"
+			    if IsForAbbreviations = false then
+			      LBPossible.ColumnCount = 2
+			      LBPossible.ColumnWidths = "*,90"
+			    end if
 			  end if
 			  
 			  
@@ -546,30 +569,6 @@ End
 #tag EndEvents
 #tag Events LBPossible
 	#tag Event
-		Function CellBackgroundPaint(g As Graphics, row As Integer, column As Integer) As Boolean
-		  if me.Selected(row) then
-		    g.forecolor = rgb(50,50,150)
-		  else
-		    g.forecolor = rgb(20,20,20)
-		  end if
-		  g.FillRectangle 0,0,g.Width,g.Height
-		  Return true
-		End Function
-	#tag EndEvent
-	#tag Event
-		Function CellTextPaint(g As Graphics, row As Integer, column As Integer, x as Integer, y as Integer) As Boolean
-		  
-		  g.forecolor = rgb(240,240,240)
-		  
-		  if row > -1 and row < me.listcount and column > -1 and column < me.ColumnCount then
-		    if searchDepth > 0 and me.RowTagAt(row) isa Possibility then
-		      g.forecolor = Possibility(me.RowTagAt(row)).possibility_GetTextColor(g.forecolor)
-		    end if
-		  end if
-		  
-		End Function
-	#tag EndEvent
-	#tag Event
 		Sub Change()
 		  if IsConductingSearch = false and me.listindex <> -1 then
 		    EDSearch.Text = me.cell(me.listindex,0)
@@ -599,6 +598,16 @@ End
 		    me.listindex = row
 		    ConfirmSelection
 		  end if
+		End Function
+	#tag EndEvent
+	#tag Event
+		Function WantsIsForAbbreviations() As Boolean
+		  Return IsForAbbreviations
+		End Function
+	#tag EndEvent
+	#tag Event
+		Function WantsSearchDepth() As integer
+		  Return searchDepth
 		End Function
 	#tag EndEvent
 #tag EndEvents
@@ -896,6 +905,6 @@ End
 		Group="Behavior"
 		InitialValue=""
 		Type="String"
-		EditorType=""
+		EditorType="MultiLineEditor"
 	#tag EndViewProperty
 #tag EndViewBehavior

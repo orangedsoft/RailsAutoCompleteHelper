@@ -43,10 +43,27 @@ Inherits Application
 		  
 		  
 		  LoadPrefs
+		  SetAbbreviationsFolderFromLastLocation
 		  LoadProjectFolder
 		End Sub
 	#tag EndEvent
 
+
+	#tag MenuHandler
+		Function AbbreviationsEditAbbreviation() As Boolean Handles AbbreviationsEditAbbreviation.Action
+			WinAbbreviations.show
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function AbbreviationsOpenAbbreviationsFolder() As Boolean Handles AbbreviationsOpenAbbreviationsFolder.Action
+			SelectAbbreviationsFolder
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
 
 	#tag MenuHandler
 		Function FileClearAll() As Boolean Handles FileClearAll.Action
@@ -67,7 +84,7 @@ Inherits Application
 	#tag EndMenuHandler
 
 	#tag MenuHandler
-		Function filereloadCurrentProject() As Boolean Handles filereloadCurrentProject.Action
+		Function FileReloadCurrentProject() As Boolean Handles FileReloadCurrentProject.Action
 			LoadProjectFolder(false,1)
 			Return True
 			
@@ -98,15 +115,23 @@ Inherits Application
 
 	#tag Method, Flags = &h0
 		Sub HideApp()
+		  dim hasAbbreviationWindow as Boolean
+		  
 		  if app.MainWindow <> nil then
 		    app.MainWindow.Close
 		    app.MainWindow = nil
 		    
 		    for i as integer = WindowCount-1 downto 0
-		      window(i).close
+		      if window(i) isa WinAbbreviationSet or window(i) isa WinEditAbbreviation then
+		        hasAbbreviationWindow = true
+		      else
+		        window(i).close
+		      end if
 		    next
 		    
-		    sendActivateCommand
+		    if not hasAbbreviationWindow then
+		      sendActivateCommand
+		    end if
 		  end if
 		  
 		  
@@ -131,6 +156,7 @@ Inherits Application
 		    else
 		      //new save format
 		      LastBaseFolderPath = s.NthField("<LastBaseFolderPath>",2)
+		      LastAbbreviationsPath = s.NthField("<LastAbbreviationsPath>",2)
 		      SearchDeep = s.NthField("<SearchDeep>",2) = "true"
 		    end if
 		    
@@ -236,14 +262,34 @@ Inherits Application
 		  
 		  dim textout as TextOutputStream = TextOutputStream.Open(ff)
 		  textout.Write "<LastBaseFolderPath>"+LastBaseFolderPath+"<LastBaseFolderPath>"
+		  textout.Write "<LastAbbreviationsPath>"+LastAbbreviationsPath+"<LastAbbreviationsPath>"
 		  textout.Write "<SearchDeep>"+if(SearchDeep,"true","false")+"<SearchDeep>"
 		  textout.Close
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub SelectAbbreviationsFolder()
+		  dim ff as FolderItem = SelectFolder
+		  if ff = nil then Return
+		  LastAbbreviationsPath = ff.NativePath
+		  
+		  
+		  SetAbbreviationsFolderFromLastLocation
+		  SavePrefs
+		  LoadProjectFolder
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub SendDelayedStrokeNow(sender as object = nil)
 		  sendKeystrokes(myDelayedString)
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub SetAbbreviationsFolderFromLastLocation()
+		  CurrentAbbreviationsFolder = new FolderItem(LastAbbreviationsPath, FolderItem.PathModes.Native)
 		End Sub
 	#tag EndMethod
 
@@ -283,6 +329,10 @@ Inherits Application
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
+		CurrentAbbreviationsFolder As FolderItem
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		CurrentProjectFolder As FolderItem
 	#tag EndProperty
 
@@ -296,6 +346,10 @@ Inherits Application
 
 	#tag Property, Flags = &h1
 		Protected HotKeyWatcher As HotKeyMBS
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		LastAbbreviationsPath As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

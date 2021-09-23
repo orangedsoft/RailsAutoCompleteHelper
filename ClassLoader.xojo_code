@@ -3,11 +3,13 @@ Protected Class ClassLoader
 Implements Possibility
 	#tag Method, Flags = &h0
 		Function DoLoad(withFile as FolderItem) As Boolean
-		  
 		  if withFile = nil or withFile.Exists=false then
 		    return false 
 		  end if
 		  
+		  if withFile.Name.Right(4) = ".abv" then
+		    Return DoLoadAbbreviations(withFile)
+		  end if
 		  
 		  me.ClassName = withFile.Name.NthField(".",1)
 		  me.ClassDefinitionLocation = withFile.ShellPath
@@ -79,19 +81,57 @@ Implements Possibility
 		    end if
 		  loop
 		  
-		  me.NameVariants = GetVariantsForName(me.ClassName)
+		  me.NameVariants = GetVariantsForName(array(me.ClassName))
 		  tt.Close
 		  Return true
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Shared Function GetVariantsForName(n as string) As string()
+		Function DoLoadAbbreviations(withFile as FolderItem) As Boolean
+		  if withFile = nil or withFile.Exists=false then
+		    return false 
+		  end if
+		  
+		  me.ClassName = withFile.Name.NthField(".",1)
+		  me.ClassDefinitionLocation = withFile.ShellPath
+		  me.ExtraInfo.Value("IsAbbreviationSet") = true
+		  
+		  dim tt as TextInputStream = TextInputStream.Open(withFile)
+		  if tt=nil then return false 
+		  
+		  dim ss as string = tt.ReadAll
+		  tt.Close
+		  
+		  if ss.instr("<abbreviationSetTitle>") <> 0 then
+		    me.ExtraInfo.Value("abbreviationSetTitle") = ss.NthField("<abbreviationSetTitle>",2).NthField("</abbreviationSetTitle>",1)
+		  end if
+		  
+		  do until ss.instr("<abbreviationItem>") = 0 or ss.instr("</abbreviationItem>") = 0
+		    dim chunk as string = ss.nthfield("<abbreviationItem>",2).NthField("</abbreviationItem>",1)
+		    dim d as string = ss.nthfield("<abbreviationDescription>",2).nthfield("</abbreviationDescription>",1)
+		    dim a as string = ss.nthfield("<abbreviationShort>",2).nthfield("</abbreviationShort>",1)
+		    dim c as string = ss.nthfield("<abbreviationContent>",2).nthfield("</abbreviationContent>",1)
+		    
+		    MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeAbbreviation,withFile,0,a,d,c))
+		    ss = mid(ss,ss.instr("</abbreviationItem>")+19)
+		  loop
+		  
+		  me.NameVariants = GetVariantsForName(array(me.ClassName,me.ExtraInfo.Lookup("abbreviationSetTitle","")))
+		  tt.Close
+		  Return true
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Shared Function GetVariantsForName(n() as string) As string()
 		  
 		  dim s(-1) as string
-		  s.Append(n.ReplaceAll("_",""))
-		  s.Append(n.ReplaceAll(" ",""))
 		  
+		  for i as integer = 0 to UBound(n)
+		    s.Append(n(i).ReplaceAll("_",""))
+		    s.Append(n(i).ReplaceAll(" ",""))
+		  next
 		  
 		  Return s
 		End Function
@@ -106,6 +146,8 @@ Implements Possibility
 		    LoadClassesFromFolder(classFolder)
 		  end if
 		  
+		  //load abbreviations
+		  LoadClassesFromFolder(app.CurrentAbbreviationsFolder)
 		  
 		  Exception err
 		    msgbox "Couldn't find the models folder."
@@ -121,7 +163,7 @@ Implements Possibility
 		      if classFile <> nil and classFile.Exists then
 		        if classFile.IsFolder and app.SearchDeep then
 		          LoadClassesFromFolder(classFile)
-		        elseif classFile.Name.right(3) = ".rb" then
+		        elseif classFile.Name.right(3) = ".rb" or classFile.Name.right(4) = ".abv" then
 		          dim cl as new ClassLoader
 		          if cl.DoLoad(classFile) then
 		            CurrentClasses.Append(cl)
@@ -162,8 +204,11 @@ Implements Possibility
 	#tag Method, Flags = &h0
 		Function possibility_GetTextColor(defaultColor as color) As color
 		  // Part of the Possibility interface.
-		  
-		  Return defaultColor
+		  if me.ExtraInfo.Lookup("IsAbbreviationSet",false) then
+		    return rgb(216,186,125)
+		  else
+		    Return defaultColor
+		  end if
 		End Function
 	#tag EndMethod
 
@@ -198,6 +243,31 @@ Implements Possibility
 
 	#tag Property, Flags = &h0
 		Shared CurrentClasses(-1) As ClassLoader
+	#tag EndProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  if mExtraInfo = nil then
+			    mExtraInfo = new Dictionary
+			  end if
+			  
+			  Return mExtraInfo
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mExtraInfo = value
+			End Set
+		#tag EndSetter
+		ExtraInfo As Dictionary
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		#tag Note
+			//only used for ClassAttribute.AttibuteType = TypeProperty
+		#tag EndNote
+		Private mExtraInfo As Dictionary
 	#tag EndProperty
 
 	#tag Property, Flags = &h0

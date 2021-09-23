@@ -10,6 +10,8 @@ This app will accept a project folder and load the files located in /app/models/
 - Assocations, found by lines beginning with the various Rails association types
 - Scopes, found by lines beginning with "scope "
 
+You can also set up custom abbreviation sets to autocomplete whatever you'd like. With the app focused, press Command-N to open the abbreviations window to create sets and abbreviations.
+
 # **Disclaimer**
 This is a very rudimentary autocomplete app used for internal purposes. There are many limitations including:
 - It doesn't search any folders besides the main app/models/ folder

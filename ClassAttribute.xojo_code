@@ -2,10 +2,15 @@
 Protected Class ClassAttribute
 Implements Possibility
 	#tag Method, Flags = &h0
-		Sub Constructor(withType as string, inFile as folderitem, atLine as integer, ll as string, extra as string = "")
+		Sub Constructor(withType as string, inFile as folderitem, atLine as integer, ll as string, extra as string = "", extra2 as string = "")
+		  dim possibleNames(-1) as string
 		  
+		  RandomID = system.Random.InRange(0,1000000000)
 		  AttributeType = withType
-		  DefinitionLocation = inFile.ShellPath+":"+cstr(atLine)
+		  
+		  if inFile <> nil then
+		    DefinitionLocation = inFile.ShellPath+":"+cstr(atLine)
+		  end if
 		  
 		  select case withType
 		  case TypeProperty
@@ -31,10 +36,32 @@ Implements Possibility
 		    
 		    AttributeName = nthfield(ll,":",2).nthfield(",",1).trim
 		    
+		  case TypeAbbreviation
+		    
+		    AttributeName = ll
+		    ExtraInfo.Value("description") = extra
+		    ExtraInfo.Value("content") = extra2
+		    possibleNames.Append(extra)
+		    
 		  end select
 		  
-		  me.NameVariants = ClassLoader.GetVariantsForName(AttributeName)
+		  possibleNames.Append(AttributeName)
+		  me.NameVariants = ClassLoader.GetVariantsForName(possibleNames)
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ExportAbbreviationText() As String
+		  dim s as string
+		  
+		  s = s + "<abbreviationItem>"
+		  s = s + "<abbreviationDescription>"+ExtraInfo.Lookup("description","")+"</abbreviationDescription>"
+		  s = s + "<abbreviationShort>"+AttributeName+"</abbreviationShort>"
+		  s = s + "<abbreviationContent>"+ExtraInfo.Lookup("content","")+"</abbreviationContent>"
+		  s = s + "</abbreviationItem>"
+		  
+		  Return s
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -54,6 +81,8 @@ Implements Possibility
 		    extra = "self.method"
 		  case TypeScope
 		    extra = "scope"
+		  case TypeAbbreviation
+		    extra = ExtraInfo.Lookup("description","")
 		  end select
 		  
 		  lb.AddRow(AttributeName, extra)
@@ -110,6 +139,12 @@ Implements Possibility
 		      Return true
 		    end if
 		  next
+		  
+		  if AttributeType = TypeAbbreviation then
+		    if ExtraInfo.Lookup("description","").StringValue.instr(s) <> 0  then
+		      Return true
+		    end if
+		  end if
 		End Function
 	#tag EndMethod
 
@@ -158,11 +193,18 @@ Implements Possibility
 		Private NameVariants(-1) As String
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		RandomID As Integer
+	#tag EndProperty
+
 
 	#tag Constant, Name = ExtraInfoAssociationType, Type = String, Dynamic = False, Default = \"ExtraInfoAssociationType", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = ExtraInfoPropertyType, Type = String, Dynamic = False, Default = \"ExtraInfoPropertyType", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = TypeAbbreviation, Type = String, Dynamic = False, Default = \"TypeAbbreviation", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = TypeAssociation, Type = String, Dynamic = False, Default = \"TypeAssociation", Scope = Public
