@@ -91,6 +91,16 @@ Inherits Application
 		End Function
 	#tag EndMenuHandler
 
+	#tag MenuHandler
+		Function WindowCloseWindow() As Boolean Handles WindowCloseWindow.Action
+			if Application.WindowCount > 0 then
+			Application.Window(0).close
+			end if
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
 
 	#tag Method, Flags = &h0
 		Sub BringToFront(sender as object = nil)
@@ -122,7 +132,7 @@ Inherits Application
 		    app.MainWindow = nil
 		    
 		    for i as integer = WindowCount-1 downto 0
-		      if window(i) isa WinAbbreviationSet or window(i) isa WinEditAbbreviation then
+		      if window(i) isa WinAbbreviations then
 		        hasAbbreviationWindow = true
 		      else
 		        window(i).close
@@ -426,6 +436,14 @@ Inherits Application
 			Group="Behavior"
 			InitialValue=""
 			Type="Integer"
+			EditorType=""
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="LastAbbreviationsPath"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="String"
 			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior

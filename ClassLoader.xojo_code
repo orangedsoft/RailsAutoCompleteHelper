@@ -88,20 +88,34 @@ Implements Possibility
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function DoLoadAbbreviations(withFile as FolderItem) As Boolean
-		  if withFile = nil or withFile.Exists=false then
-		    return false 
+		Function DoLoadAbbreviations(withFile as FolderItem, orWithPair as Pair = nil) As Boolean
+		  dim dataAndNamePair as pair
+		  
+		  if orWithPair <> nil then
+		    dataAndNamePair = orWithPair
+		  else
+		    if withFile = nil or withFile.Exists=false then
+		      return false 
+		    end if
+		    
+		    dim tt as TextInputStream = TextInputStream.Open(withFile)
+		    if tt=nil then return false 
+		    dim tempData as string = tt.ReadAll
+		    tt.Close
+		    
+		    dataAndNamePair = new pair(withFile.Name, tempData)
+		    me.ClassDefinitionLocation = withFile.ShellPath
 		  end if
 		  
-		  me.ClassName = withFile.Name.NthField(".",1)
-		  me.ClassDefinitionLocation = withFile.ShellPath
+		  
+		  if dataAndNamePair = nil then
+		    Return false
+		  end if
+		  
+		  me.ClassName = dataAndNamePair.left.StringValue.NthField(".",1)
 		  me.ExtraInfo.Value("IsAbbreviationSet") = true
 		  
-		  dim tt as TextInputStream = TextInputStream.Open(withFile)
-		  if tt=nil then return false 
-		  
-		  dim ss as string = tt.ReadAll
-		  tt.Close
+		  dim ss as string = dataAndNamePair.Right.StringValue
 		  
 		  if ss.instr("<abbreviationSetTitle>") <> 0 then
 		    me.ExtraInfo.Value("abbreviationSetTitle") = ss.NthField("<abbreviationSetTitle>",2).NthField("</abbreviationSetTitle>",1)
@@ -118,7 +132,6 @@ Implements Possibility
 		  loop
 		  
 		  me.NameVariants = GetVariantsForName(array(me.ClassName,me.ExtraInfo.Lookup("abbreviationSetTitle","")))
-		  tt.Close
 		  Return true
 		End Function
 	#tag EndMethod

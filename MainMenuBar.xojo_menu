@@ -204,5 +204,26 @@ Begin Menu MainMenuBar
          Visible = True
       End
    End
+   Begin MenuItem WindowMenu
+      SpecialMenu = 0
+      Value = "Window"
+      Index = -2147483648
+      Text = "Window"
+      AutoEnabled = True
+      AutoEnable = True
+      Visible = True
+      Begin MenuItem WindowCloseWindow
+         SpecialMenu = 0
+         Value = "Close Window"
+         Index = -2147483648
+         Text = "Close Window"
+         ShortcutKey = "W"
+         Shortcut = "Cmd+W"
+         MenuModifier = True
+         AutoEnabled = True
+         AutoEnable = True
+         Visible = True
+      End
+   End
 End
 #tag EndMenu
