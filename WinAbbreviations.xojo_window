@@ -842,6 +842,14 @@ Begin Window WinAbbreviations
       Visible         =   True
       Width           =   80
    End
+   Begin Timer Timer1
+      Index           =   -2147483648
+      LockedInPosition=   False
+      Period          =   500
+      RunMode         =   "2"
+      Scope           =   0
+      TabPanelIndex   =   0
+   End
 End
 #tag EndWindow
 
@@ -893,6 +901,45 @@ End
 		    LBAbbreviations.CellValueAt(existingRowIndex,1) = c.ExtraInfo.Lookup("description","")
 		    LBAbbreviations.RowTagAt(existingRowIndex) = c
 		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub AttemptSelectDelayedLoadPath()
+		  
+		  dim setFileName as string = nthfield(DelayedPathLoad,"<abbreviationSeparator>",1)
+		  dim abbreviationName as string = nthfield(DelayedPathLoad,"<abbreviationSeparator>",2)
+		  DelayedPathLoad = ""
+		  
+		  for i as integer = 0 to LBSets.RowCount - 1
+		    if LBSets.CellValueAt(i,0) = setFileName then
+		      LBSets.SelectedRowIndex = i
+		      exit
+		    end if
+		  next
+		  
+		  if abbreviationName <> "" then
+		    for i as integer = 0 to LBAbbreviations.RowCount - 1
+		      if LBAbbreviations.CellValueAt(i,0) = abbreviationName then
+		        LBAbbreviations.SelectedRowIndex = i
+		        exit
+		      end if
+		    next
+		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Shared Sub attemptShowAbbreviationPath(thePath as string)
+		  for i as integer = 0 to WindowCount - 1
+		    if Window(i) isa WinAbbreviations then
+		      //they are already editing abbreviations so we will skip this
+		      Return
+		    end if
+		  next
+		  
+		  WinAbbreviations.show
+		  WinAbbreviations.DelayedPathLoad = thePath
 		End Sub
 	#tag EndMethod
 
@@ -1175,6 +1222,10 @@ End
 	#tag EndMethod
 
 
+	#tag Property, Flags = &h0
+		DelayedPathLoad As String
+	#tag EndProperty
+
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
@@ -1369,6 +1420,15 @@ End
 	#tag Event
 		Sub Action()
 		  SaveChanges
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Timer1
+	#tag Event
+		Sub Action()
+		  if DelayedPathLoad <> "" then
+		    AttemptSelectDelayedLoadPath
+		  end if
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -1607,6 +1667,30 @@ End
 		Group="Deprecated"
 		InitialValue="True"
 		Type="Boolean"
+		EditorType=""
+	#tag EndViewProperty
+	#tag ViewProperty
+		Name="HasUnsavedChanges"
+		Visible=false
+		Group="Behavior"
+		InitialValue=""
+		Type="Boolean"
+		EditorType=""
+	#tag EndViewProperty
+	#tag ViewProperty
+		Name="isLoading"
+		Visible=false
+		Group="Behavior"
+		InitialValue=""
+		Type="Boolean"
+		EditorType=""
+	#tag EndViewProperty
+	#tag ViewProperty
+		Name="LastAcceptedFileName"
+		Visible=false
+		Group="Behavior"
+		InitialValue=""
+		Type="String"
 		EditorType=""
 	#tag EndViewProperty
 #tag EndViewBehavior

@@ -263,14 +263,35 @@ End
 		  
 		  
 		  if Keyboard.AsyncShiftKey then
-		    //open the file in vscode
-		    try
-		      dim pp as Possibility = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
-		      dim sh as new shell
-		      dim shellCode as string = "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code -g "+pp.possibility_GetDefinitionLocation
-		      sh.Execute(shellCode)
-		    catch
-		    end try
+		    dim abbreviationPath as string
+		    
+		    if LBPossible.SelectedRowIndex <> -1 then
+		      if IsForAbbreviations then
+		        dim cc as ClassLoader = GetClassLoaderParent
+		        if cc <> nil then
+		          abbreviationPath = cc.GetAbbreviationPath(LBPossible.RowTagAt(LBPossible.SelectedRowIndex))
+		        end if
+		      elseif searchDepth = 0 then
+		        dim cc as ClassLoader = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
+		        if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) = true then
+		          abbreviationPath = cc.GetAbbreviationPath
+		        end if
+		      end if
+		    end if
+		    
+		    if abbreviationPath <> "" then
+		      //try to show in abbreviations editor
+		      WinAbbreviations.attemptShowAbbreviationPath(abbreviationPath)
+		    else
+		      //open the file in vscode
+		      try
+		        dim pp as Possibility = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
+		        dim sh as new shell
+		        dim shellCode as string = "/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code -g "+pp.possibility_GetDefinitionLocation
+		        sh.Execute(shellCode)
+		      catch
+		      end try
+		    end if
 		    Return
 		  end if
 		  
@@ -313,6 +334,21 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function GetClassLoaderParent() As ClassLoader
+		  if searchDepthClass = "" then
+		    Return nil
+		  end if
+		  
+		  for each cc as ClassLoader in ClassLoader.CurrentClasses
+		    if cc.ClassName = searchDepthClass then
+		      Return cc
+		    end if
+		  next
+		  
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub LoadPossibilities()
 		  IsLoading = true
 		  
@@ -337,20 +373,17 @@ End
 		      possibilitiesNames.Append(cc.possibility_GetName)
 		    next
 		  case 1
-		    for each cc as ClassLoader in ClassLoader.CurrentClasses
-		      if cc.ClassName = searchDepthClass then
-		        if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) then
-		          SetupForAbbreviations
-		        end if
-		        
-		        for each ct as ClassAttribute in cc.MyAttributes
-		          possibilities.Append(ct)
-		          possibilitiesNames.Append(ct.possibility_GetName)
-		        next
-		        
-		        exit
+		    dim cc as ClassLoader = self.GetClassLoaderParent
+		    if cc <> nil then
+		      if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) then
+		        SetupForAbbreviations
 		      end if
-		    next
+		      
+		      for each ct as ClassAttribute in cc.MyAttributes
+		        possibilities.Append(ct)
+		        possibilitiesNames.Append(ct.possibility_GetName)
+		      next
+		    end if
 		  end select
 		  
 		  possibilitiesNames.SortWith(possibilities)

@@ -137,6 +137,18 @@ Implements Possibility
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function GetAbbreviationPath(forAttribute as ClassAttribute = Nil) As String
+		  dim s as string = ClassName + ".abv"
+		  
+		  if forAttribute <> nil then
+		    s = s + "<abbreviationSeparator>" + forAttribute.AttributeName
+		  end if
+		  
+		  Return s
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Shared Function GetVariantsForName(n() as string) As string()
 		  
 		  dim s(-1) as string
