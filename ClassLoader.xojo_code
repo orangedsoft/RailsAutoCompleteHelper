@@ -128,7 +128,7 @@ Implements Possibility
 		    dim c as string = ss.nthfield("<snippetContent>",2).nthfield("</snippetContent>",1)
 		    
 		    MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeSnippet,withFile,0,a,d,c))
-		    ss = mid(ss,ss.instr("</snippetItem>")+19)
+		    ss = mid(ss,ss.instr("</snippetItem>")+14)
 		  loop
 		  
 		  me.NameVariants = GetVariantsForName(array(me.ClassName,me.ExtraInfo.Lookup("snippetSetTitle","")))
