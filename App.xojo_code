@@ -293,7 +293,27 @@ Inherits Application
 
 	#tag Method, Flags = &h0
 		Sub SendDelayedStrokeNow(sender as object = nil)
-		  sendKeystrokes(myDelayedString)
+		  //we need to split any returns here to send via separate applescript
+		  dim remainingString as string = myDelayedString
+		  
+		  //convert all possible return combinations to chr(13)
+		  remainingString = remainingString.ReplaceAll(chr(13)+chr(10),chr(13))
+		  remainingString = remainingString.ReplaceAll(chr(10),chr(13))
+		  
+		  dim chunks(-1) as string = remainingString.Split(chr(13))
+		  
+		  for i as integer = 0 to UBound(chunks)
+		    if chunks(i) <> "" then
+		      sendKeystrokes(chunks(i))
+		    end if
+		    
+		    if i <> UBound(chunks) then
+		      sendReturn
+		    end if
+		  next
+		  
+		  
+		  
 		End Sub
 	#tag EndMethod
 
