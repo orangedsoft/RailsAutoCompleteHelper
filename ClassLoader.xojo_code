@@ -8,7 +8,7 @@ Implements Possibility
 		  end if
 		  
 		  if withFile.Name.Right(4) = ".abv" then
-		    Return DoLoadAbbreviations(withFile)
+		    Return DoLoadSnippets(withFile)
 		  end if
 		  
 		  me.ClassName = withFile.Name.NthField(".",1)
@@ -88,7 +88,7 @@ Implements Possibility
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function DoLoadAbbreviations(withFile as FolderItem, orWithPair as Pair = nil) As Boolean
+		Function DoLoadSnippets(withFile as FolderItem, orWithPair as Pair = nil) As Boolean
 		  dim dataAndNamePair as pair
 		  
 		  if orWithPair <> nil then
@@ -113,35 +113,35 @@ Implements Possibility
 		  end if
 		  
 		  me.ClassName = dataAndNamePair.left.StringValue.NthField(".",1)
-		  me.ExtraInfo.Value("IsAbbreviationSet") = true
+		  me.ExtraInfo.Value("IsSnippetSet") = true
 		  
 		  dim ss as string = dataAndNamePair.Right.StringValue
 		  
-		  if ss.instr("<abbreviationSetTitle>") <> 0 then
-		    me.ExtraInfo.Value("abbreviationSetTitle") = ss.NthField("<abbreviationSetTitle>",2).NthField("</abbreviationSetTitle>",1)
+		  if ss.instr("<snippetSetTitle>") <> 0 then
+		    me.ExtraInfo.Value("snippetSetTitle") = ss.NthField("<snippetSetTitle>",2).NthField("</snippetSetTitle>",1)
 		  end if
 		  
-		  do until ss.instr("<abbreviationItem>") = 0 or ss.instr("</abbreviationItem>") = 0
-		    dim chunk as string = ss.nthfield("<abbreviationItem>",2).NthField("</abbreviationItem>",1)
-		    dim d as string = ss.nthfield("<abbreviationDescription>",2).nthfield("</abbreviationDescription>",1)
-		    dim a as string = ss.nthfield("<abbreviationShort>",2).nthfield("</abbreviationShort>",1)
-		    dim c as string = ss.nthfield("<abbreviationContent>",2).nthfield("</abbreviationContent>",1)
+		  do until ss.instr("<snippetItem>") = 0 or ss.instr("</snippetItem>") = 0
+		    dim chunk as string = ss.nthfield("<snippetItem>",2).NthField("</snippetItem>",1)
+		    dim d as string = ss.nthfield("<snippetDescription>",2).nthfield("</snippetDescription>",1)
+		    dim a as string = ss.nthfield("<snippetAbbreviation>",2).nthfield("</snippetAbbreviation>",1)
+		    dim c as string = ss.nthfield("<snippetContent>",2).nthfield("</snippetContent>",1)
 		    
-		    MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeAbbreviation,withFile,0,a,d,c))
-		    ss = mid(ss,ss.instr("</abbreviationItem>")+19)
+		    MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeSnippet,withFile,0,a,d,c))
+		    ss = mid(ss,ss.instr("</snippetItem>")+19)
 		  loop
 		  
-		  me.NameVariants = GetVariantsForName(array(me.ClassName,me.ExtraInfo.Lookup("abbreviationSetTitle","")))
+		  me.NameVariants = GetVariantsForName(array(me.ClassName,me.ExtraInfo.Lookup("snippetSetTitle","")))
 		  Return true
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function GetAbbreviationPath(forAttribute as ClassAttribute = Nil) As String
+		Function GetSnippetPath(forAttribute as ClassAttribute = Nil) As String
 		  dim s as string = ClassName + ".abv"
 		  
 		  if forAttribute <> nil then
-		    s = s + "<abbreviationSeparator>" + forAttribute.AttributeName
+		    s = s + "<snippetSeparator>" + forAttribute.AttributeName
 		  end if
 		  
 		  Return s
@@ -171,8 +171,8 @@ Implements Possibility
 		    LoadClassesFromFolder(classFolder)
 		  end if
 		  
-		  //load abbreviations
-		  LoadClassesFromFolder(app.CurrentAbbreviationsFolder)
+		  //load snippets
+		  LoadClassesFromFolder(app.CurrentSnippetsFolder)
 		  
 		  Exception err
 		    msgbox "Couldn't find the models folder."
@@ -229,7 +229,7 @@ Implements Possibility
 	#tag Method, Flags = &h0
 		Function possibility_GetTextColor(defaultColor as color) As color
 		  // Part of the Possibility interface.
-		  if me.ExtraInfo.Lookup("IsAbbreviationSet",false) then
+		  if me.ExtraInfo.Lookup("IsSnippetSet",false) then
 		    return rgb(216,186,125)
 		  else
 		    Return defaultColor

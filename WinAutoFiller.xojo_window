@@ -263,25 +263,25 @@ End
 		  
 		  
 		  if Keyboard.AsyncShiftKey then
-		    dim abbreviationPath as string
+		    dim snippetPath as string
 		    
 		    if LBPossible.SelectedRowIndex <> -1 then
-		      if IsForAbbreviations then
+		      if IsForSnippets then
 		        dim cc as ClassLoader = GetClassLoaderParent
 		        if cc <> nil then
-		          abbreviationPath = cc.GetAbbreviationPath(LBPossible.RowTagAt(LBPossible.SelectedRowIndex))
+		          snippetPath = cc.GetSnippetPath(LBPossible.RowTagAt(LBPossible.SelectedRowIndex))
 		        end if
 		      elseif searchDepth = 0 then
 		        dim cc as ClassLoader = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
-		        if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) = true then
-		          abbreviationPath = cc.GetAbbreviationPath
+		        if cc.ExtraInfo.Lookup("IsSnippetSet",false) = true then
+		          snippetPath = cc.GetSnippetPath
 		        end if
 		      end if
 		    end if
 		    
-		    if abbreviationPath <> "" then
-		      //try to show in abbreviations editor
-		      WinAbbreviations.attemptShowAbbreviationPath(abbreviationPath)
+		    if snippetPath <> "" then
+		      //try to show in snippets editor
+		      WinSnippets.attemptShowSnippetPath(snippetPath)
 		    else
 		      //open the file in vscode
 		      try
@@ -319,7 +319,7 @@ End
 		  case 1
 		    //type the text into the previous editor
 		    dim result as string
-		    if IsForAbbreviations and LBPossible.SelectedRowIndex <> -1 then
+		    if IsForSnippets and LBPossible.SelectedRowIndex <> -1 then
 		      result = ClassAttribute(LBPossible.RowTagAt(LBPossible.SelectedRowIndex)).ExtraInfo.Lookup("content","")
 		    else
 		      result = EDSearch.Text
@@ -375,8 +375,8 @@ End
 		  case 1
 		    dim cc as ClassLoader = self.GetClassLoaderParent
 		    if cc <> nil then
-		      if cc.ExtraInfo.Lookup("IsAbbreviationSet",false) then
-		        SetupForAbbreviations
+		      if cc.ExtraInfo.Lookup("IsSnippetSet",false) then
+		        SetupForSnippets
 		      end if
 		      
 		      for each ct as ClassAttribute in cc.MyAttributes
@@ -432,8 +432,8 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub SetupForAbbreviations()
-		  IsForAbbreviations = true
+		Sub SetupForSnippets()
+		  IsForSnippets = true
 		  LBPossible.DefaultRowHeight = 40
 		  LBPossible.ColumnWidths = "*,0"
 		End Sub
@@ -466,7 +466,7 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		IsForAbbreviations As Boolean
+		IsForSnippets As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -507,7 +507,7 @@ End
 			    self.top = mParentWindow.top
 			    self.Width = 390
 			    
-			    if IsForAbbreviations = false then
+			    if IsForSnippets = false then
 			      LBPossible.ColumnCount = 2
 			      LBPossible.ColumnWidths = "*,90"
 			    end if
@@ -634,8 +634,8 @@ End
 		End Function
 	#tag EndEvent
 	#tag Event
-		Function WantsIsForAbbreviations() As Boolean
-		  Return IsForAbbreviations
+		Function WantsIsForSnippets() As Boolean
+		  Return IsForSnippets
 		End Function
 	#tag EndEvent
 	#tag Event
@@ -941,7 +941,7 @@ End
 		EditorType="MultiLineEditor"
 	#tag EndViewProperty
 	#tag ViewProperty
-		Name="IsForAbbreviations"
+		Name="IsForSnippets"
 		Visible=false
 		Group="Behavior"
 		InitialValue=""

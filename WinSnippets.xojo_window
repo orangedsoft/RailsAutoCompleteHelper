@@ -1,5 +1,5 @@
 #tag Window
-Begin Window WinAbbreviations
+Begin Window WinSnippets
    Backdrop        =   0
    BackgroundColor =   &cFFFFFF00
    Composite       =   False
@@ -20,7 +20,7 @@ Begin Window WinAbbreviations
    MinimumHeight   =   400
    MinimumWidth    =   900
    Resizeable      =   True
-   Title           =   "Abbreviations"
+   Title           =   "Snippets"
    Type            =   "0"
    Visible         =   True
    Width           =   900
@@ -81,7 +81,7 @@ Begin Window WinAbbreviations
          Height          =   449
          Index           =   -2147483648
          InitialParent   =   "GroupBox1"
-         InitialValue    =   "Abbreviation Sets"
+         InitialValue    =   "Snippet Sets"
          Italic          =   False
          Left            =   20
          LockBottom      =   True
@@ -133,7 +133,7 @@ Begin Window WinAbbreviations
       Underline       =   False
       Visible         =   True
       Width           =   300
-      Begin LBPossibilityDisplayer LBAbbreviations
+      Begin LBPossibilityDisplayer LBSnippets
          AllowAutoDeactivate=   True
          AllowAutoHideScrollbars=   True
          AllowExpandableRows=   False
@@ -372,7 +372,7 @@ Begin Window WinAbbreviations
       Underline       =   False
       Visible         =   True
       Width           =   335
-      Begin TextField EDAbbreviation
+      Begin TextField EDSnippet
          AllowAutoDeactivate=   True
          AllowFocusRing  =   True
          AllowSpellChecking=   False
@@ -388,7 +388,7 @@ Begin Window WinAbbreviations
          Format          =   ""
          HasBorder       =   True
          Height          =   22
-         Hint            =   ""
+         Hint            =   "Snippet Abbreviation"
          Index           =   -2147483648
          InitialParent   =   "GB2"
          Italic          =   False
@@ -432,7 +432,7 @@ Begin Window WinAbbreviations
          Format          =   ""
          HasBorder       =   True
          Height          =   22
-         Hint            =   ""
+         Hint            =   "Description"
          Index           =   -2147483648
          InitialParent   =   "GB2"
          Italic          =   False
@@ -557,7 +557,7 @@ Begin Window WinAbbreviations
          Index           =   -2147483648
          InitialParent   =   "GB2"
          Italic          =   False
-         Left            =   564
+         Left            =   554
          LockBottom      =   False
          LockedInPosition=   False
          LockLeft        =   True
@@ -577,7 +577,7 @@ Begin Window WinAbbreviations
          Underline       =   False
          Value           =   "Abbreviation:"
          Visible         =   True
-         Width           =   74
+         Width           =   84
       End
    End
    Begin Label STPath
@@ -742,17 +742,17 @@ Begin Window WinAbbreviations
       Top             =   11
       Transparent     =   False
       Underline       =   False
-      Value           =   "Abbreviations Path:"
+      Value           =   "Snippets Path:"
       Visible         =   True
       Width           =   130
    End
-   Begin PushButton BTNNewAbbreviation
+   Begin PushButton BTNNewSnippet
       AllowAutoDeactivate=   True
       Bold            =   False
       Cancel          =   False
-      Caption         =   "New Abbreviation"
+      Caption         =   "New Snippet"
       Default         =   False
-      Enabled         =   True
+      Enabled         =   False
       FontName        =   "System"
       FontSize        =   11.0
       FontUnit        =   0
@@ -778,7 +778,7 @@ Begin Window WinAbbreviations
       Visible         =   True
       Width           =   119
    End
-   Begin PushButton BTNDeleteAbbreviation
+   Begin PushButton BTNDeleteSnippet
       AllowAutoDeactivate=   True
       Bold            =   False
       Cancel          =   False
@@ -856,6 +856,10 @@ End
 #tag WindowCode
 	#tag Event
 		Sub Activate()
+		  if CheckForActiveSnippetFolder(true) = false then
+		    Return
+		  end if
+		  
 		  LoadListboxes
 		End Sub
 	#tag EndEvent
@@ -877,29 +881,29 @@ End
 
 
 	#tag Method, Flags = &h0
-		Sub AddAbbreviationToList(c as ClassAttribute)
+		Sub AddSnippetToList(c as ClassAttribute)
 		  if c = nil then
 		    Return
 		  end if
 		  
 		  //check to update existing row
 		  dim existingRowIndex as integer = -1
-		  for i as integer = 0 to LBAbbreviations.RowCount - 1
-		    if ClassAttribute(LBAbbreviations.RowTagAt(i)).RandomID = c.RandomID then
+		  for i as integer = 0 to LBSnippets.RowCount - 1
+		    if ClassAttribute(LBSnippets.RowTagAt(i)).RandomID = c.RandomID then
 		      existingRowIndex = i
 		      exit
 		    end if
 		  next
 		  
 		  if existingRowIndex = -1 then
-		    LBAbbreviations.AddRow("")
-		    existingRowIndex = LBAbbreviations.LastAddedRowIndex
+		    LBSnippets.AddRow("")
+		    existingRowIndex = LBSnippets.LastAddedRowIndex
 		  end if
 		  
-		  if existingRowIndex <> -1 and existingRowIndex < LBAbbreviations.RowCount then
-		    LBAbbreviations.CellValueAt(existingRowIndex,0) = c.AttributeName
-		    LBAbbreviations.CellValueAt(existingRowIndex,1) = c.ExtraInfo.Lookup("description","")
-		    LBAbbreviations.RowTagAt(existingRowIndex) = c
+		  if existingRowIndex <> -1 and existingRowIndex < LBSnippets.RowCount then
+		    LBSnippets.CellValueAt(existingRowIndex,0) = c.AttributeName
+		    LBSnippets.CellValueAt(existingRowIndex,1) = c.ExtraInfo.Lookup("description","")
+		    LBSnippets.RowTagAt(existingRowIndex) = c
 		  end if
 		End Sub
 	#tag EndMethod
@@ -907,8 +911,8 @@ End
 	#tag Method, Flags = &h0
 		Sub AttemptSelectDelayedLoadPath()
 		  
-		  dim setFileName as string = nthfield(DelayedPathLoad,"<abbreviationSeparator>",1)
-		  dim abbreviationName as string = nthfield(DelayedPathLoad,"<abbreviationSeparator>",2)
+		  dim setFileName as string = nthfield(DelayedPathLoad,"<snippetSeparator>",1)
+		  dim snippetName as string = nthfield(DelayedPathLoad,"<snippetSeparator>",2)
 		  DelayedPathLoad = ""
 		  
 		  for i as integer = 0 to LBSets.RowCount - 1
@@ -918,10 +922,10 @@ End
 		    end if
 		  next
 		  
-		  if abbreviationName <> "" then
-		    for i as integer = 0 to LBAbbreviations.RowCount - 1
-		      if LBAbbreviations.CellValueAt(i,0) = abbreviationName then
-		        LBAbbreviations.SelectedRowIndex = i
+		  if snippetName <> "" then
+		    for i as integer = 0 to LBSnippets.RowCount - 1
+		      if LBSnippets.CellValueAt(i,0) = snippetName then
+		        LBSnippets.SelectedRowIndex = i
 		        exit
 		      end if
 		    next
@@ -930,17 +934,28 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Shared Sub attemptShowAbbreviationPath(thePath as string)
+		Shared Sub attemptShowSnippetPath(thePath as string)
 		  for i as integer = 0 to WindowCount - 1
-		    if Window(i) isa WinAbbreviations then
-		      //they are already editing abbreviations so we will skip this
+		    if Window(i) isa WinSnippets then
+		      //they are already editing snippets so we will skip this
 		      Return
 		    end if
 		  next
 		  
-		  WinAbbreviations.show
-		  WinAbbreviations.DelayedPathLoad = thePath
+		  WinSnippets.show
+		  WinSnippets.DelayedPathLoad = thePath
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function CheckForActiveSnippetFolder(andSelect as Boolean) As Boolean
+		  if app.CurrentSnippetsFolder = nil or app.CurrentSnippetsFolder.Exists = false or app.CurrentSnippetsFolder.IsFolder = false then
+		    app.SelectSnippetsFolder
+		    Return false
+		  else
+		    Return true
+		  end if
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -949,7 +964,7 @@ End
 		    dim msgd as new MessageDialog
 		    dim msgb as MessageDialogButton
 		    
-		    msgd.Message="Would you like to save the changes made to your abbreviation set(s)?"
+		    msgd.Message="Would you like to save the changes made to your snippet set(s)?"
 		    
 		    
 		    msgd.ActionButton.Caption = "Save"
@@ -972,16 +987,16 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub EditSelectedAbbreviation()
-		  LoadListboxes(2)
-		  EDAbbreviation.SetFocus
+		Sub EditSelectedSet()
+		  LoadListboxes(1)
+		  EDFileName.SetFocus
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub EditSelectedSet()
-		  LoadListboxes(1)
-		  EDFileName.SetFocus
+		Sub EditSelectedSnippet()
+		  LoadListboxes(2)
+		  EDSnippet.SetFocus
 		End Sub
 	#tag EndMethod
 
@@ -990,11 +1005,11 @@ End
 		  dim ss as string
 		  dim lb as string = chr(13) + chr(13)
 		  
-		  ss = ss + "<abbreviationSetTitle>" + EDSetTitle.Text + "<abbreviationSetTitle>" + lb
+		  ss = ss + "<snippetSetTitle>" + EDSetTitle.Text + "<snippetSetTitle>" + lb
 		  
-		  for i as integer = 0 to LBAbbreviations.RowCount - 1
-		    dim cc as ClassAttribute = LBAbbreviations.RowTagAt(i)
-		    ss = ss + cc.ExportAbbreviationText + lb
+		  for i as integer = 0 to LBSnippets.RowCount - 1
+		    dim cc as ClassAttribute = LBSnippets.RowTagAt(i)
+		    ss = ss + cc.ExportSnippetText + lb
 		  next
 		  
 		  Return ss
@@ -1003,14 +1018,14 @@ End
 
 	#tag Method, Flags = &h0
 		Sub LoadInitialData()
-		  STPath.Text = if(app.LastAbbreviationsPath = "", "None", app.LastAbbreviationsPath)
-		  LoadedAbbreviationsDirectory = app.CurrentAbbreviationsFolder
+		  STPath.Text = if(app.LastSnippetsPath = "", "None", app.LastSnippetsPath)
+		  LoadedSnippetsDirectory = app.CurrentSnippetsFolder
 		  
 		  TempData = new Dictionary
 		  
-		  if app.CurrentAbbreviationsFolder <> nil and app.CurrentAbbreviationsFolder.Exists and app.CurrentAbbreviationsFolder.IsFolder then
-		    for i as integer = 0 to app.CurrentAbbreviationsFolder.Count - 1
-		      dim f as FolderItem = app.CurrentAbbreviationsFolder.ChildAt(i)
+		  if app.CurrentSnippetsFolder <> nil and app.CurrentSnippetsFolder.Exists and app.CurrentSnippetsFolder.IsFolder then
+		    for i as integer = 0 to app.CurrentSnippetsFolder.Count - 1
+		      dim f as FolderItem = app.CurrentSnippetsFolder.ChildAt(i)
 		      if f.Exists and f.Name.Right(4) = ".abv" then
 		        dim textin as TextInputStream = TextInputStream.Open(f)
 		        if textin <> nil then
@@ -1031,7 +1046,7 @@ End
 		  
 		  isLoading = true
 		  
-		  dim selectedSetTag, selectedAbbreviationTag as variant
+		  dim selectedSetTag, selectedSnippetTag as variant
 		  dim previousFocus as RectControl = self.Focus
 		  dim previousFocusSelectionStart as integer
 		  if previousFocus <> nil and previousFocus isa TextField then
@@ -1042,8 +1057,8 @@ End
 		    selectedSetTag = LBSets.RowTagAt(LBSets.SelectedRowIndex)
 		  end if
 		  
-		  if LBAbbreviations.SelectedRowIndex <> -1 then
-		    selectedAbbreviationTag = LBAbbreviations.RowTagAt(LBAbbreviations.SelectedRowIndex)
+		  if LBSnippets.SelectedRowIndex <> -1 then
+		    selectedSnippetTag = LBSnippets.RowTagAt(LBSnippets.SelectedRowIndex)
 		  end if
 		  
 		  if specificBox <= 0 then
@@ -1068,7 +1083,7 @@ End
 		  
 		  if specificBox <= 1 then
 		    //load selected set
-		    LBAbbreviations.RemoveAllRows
+		    LBSnippets.RemoveAllRows
 		    EDSetTitle.Text = ""
 		    EDFileName.Text = ""
 		    
@@ -1078,13 +1093,13 @@ End
 		      
 		      if v isa pair then
 		        dim cc as new ClassLoader
-		        if cc.DoLoadAbbreviations(nil,new pair(fileName, pair(v).right)) then
+		        if cc.DoLoadSnippets(nil,new pair(fileName, pair(v).right)) then
 		          
-		          EDSetTitle.Text = cc.ExtraInfo.Lookup("abbreviationSetTitle","")
+		          EDSetTitle.Text = cc.ExtraInfo.Lookup("snippetSetTitle","")
 		          EDFileName.Text = fileNAme
 		          
 		          for each a as ClassAttribute in cc.MyAttributes
-		            AddAbbreviationToList(a)
+		            AddSnippetToList(a)
 		          next
 		        end if
 		      end if
@@ -1093,15 +1108,15 @@ End
 		  
 		  
 		  if specificBox <= 2 then
-		    //load selected abbreviation for editing
-		    EDAbbreviation.Text = ""
+		    //load selected snippet for editing
+		    EDSnippet.Text = ""
 		    EDContent.Text = ""
 		    EDDescription.Text = ""
-		    if LBAbbreviations.SelectedRowIndex <> -1 then
-		      dim c as ClassAttribute = LBAbbreviations.RowTagAt(LBAbbreviations.SelectedRowIndex)
+		    if LBSnippets.SelectedRowIndex <> -1 then
+		      dim c as ClassAttribute = LBSnippets.RowTagAt(LBSnippets.SelectedRowIndex)
 		      EDDescription.Text = c.ExtraInfo.Lookup("description","")
 		      EDContent.Text = c.ExtraInfo.Lookup("content","")
-		      EDAbbreviation.Text = c.AttributeName
+		      EDSnippet.Text = c.AttributeName
 		    end if
 		  end if
 		  
@@ -1123,10 +1138,10 @@ End
 
 	#tag Method, Flags = &h0
 		Sub SaveChanges()
-		  dim baseFolder as FolderItem = self.LoadedAbbreviationsDirectory
+		  dim baseFolder as FolderItem = self.LoadedSnippetsDirectory
 		  
 		  if baseFolder = nil or baseFolder.Exists = false or baseFolder.IsFolder = false then
-		    msgbox "The selected abbreviations folder could not be found."
+		    msgbox "The selected snippets folder could not be found."
 		    Return
 		  end if
 		  
@@ -1153,35 +1168,7 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub UpdateAbbreviation()
-		  if isLoading then
-		    Return
-		  end if
-		  
-		  if LBAbbreviations.SelectedRowIndex = -1 then
-		    Return
-		  end if
-		  
-		  dim myAttribute as ClassAttribute = LBAbbreviations.RowTagAt(LBAbbreviations.SelectedRowIndex)
-		  
-		  dim previousID as integer = -1
-		  if myAttribute <> nil then
-		    previousID = myAttribute.RandomID
-		  end if
-		  
-		  myAttribute = new ClassAttribute(ClassAttribute.TypeAbbreviation,nil,0,EDAbbreviation.Text,EDDescription.Text,EDContent.Text)
-		  
-		  if previousID <> -1 then
-		    myAttribute.RandomID = previousID
-		  end if
-		  
-		  AddAbbreviationToList(myAttribute)
-		  UpdateSet(true)
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub UpdateSet(isFromAbbreviationUpdate as Boolean = false)
+		Sub UpdateSet(isFromSnippetUpdate as Boolean = false)
 		  //saves all data for currently selected set to memory
 		  
 		  if isLoading then
@@ -1215,9 +1202,37 @@ End
 		  TempData.Value(newName) = new pair(previousID, GetSelectedSetData)
 		  HasUnsavedChanges = true
 		  
-		  if isFromAbbreviationUpdate = false then
+		  if isFromSnippetUpdate = false then
 		    LoadListboxes
 		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub UpdateSnippet()
+		  if isLoading then
+		    Return
+		  end if
+		  
+		  if LBSnippets.SelectedRowIndex = -1 then
+		    Return
+		  end if
+		  
+		  dim myAttribute as ClassAttribute = LBSnippets.RowTagAt(LBSnippets.SelectedRowIndex)
+		  
+		  dim previousID as integer = -1
+		  if myAttribute <> nil then
+		    previousID = myAttribute.RandomID
+		  end if
+		  
+		  myAttribute = new ClassAttribute(ClassAttribute.TypeSnippet,nil,0,EDSnippet.Text,EDDescription.Text,EDContent.Text)
+		  
+		  if previousID <> -1 then
+		    myAttribute.RandomID = previousID
+		  end if
+		  
+		  AddSnippetToList(myAttribute)
+		  UpdateSet(true)
 		End Sub
 	#tag EndMethod
 
@@ -1253,7 +1268,7 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
-		Protected LoadedAbbreviationsDirectory As FolderItem
+		Protected LoadedSnippetsDirectory As FolderItem
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -1281,16 +1296,16 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Events LBAbbreviations
+#tag Events LBSnippets
 	#tag Event
 		Sub Change()
-		  BTNDeleteAbbreviation.Enabled = me.SelectedRowCount > 0
+		  BTNDeleteSnippet.Enabled = me.SelectedRowCount > 0
 		  gb2.Enabled = me.SelectedRowCount > 0
-		  EditSelectedAbbreviation
+		  EditSelectedSnippet
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Function WantsIsForAbbreviations() As Boolean
+		Function WantsIsForSnippets() As Boolean
 		  Return true
 		End Function
 	#tag EndEvent
@@ -1332,31 +1347,31 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Events EDAbbreviation
+#tag Events EDSnippet
 	#tag Event
 		Sub TextChange()
-		  UpdateAbbreviation
+		  UpdateSnippet
 		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events EDDescription
 	#tag Event
 		Sub TextChange()
-		  UpdateAbbreviation
+		  UpdateSnippet
 		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events EDContent
 	#tag Event
 		Sub TextChange()
-		  UpdateAbbreviation
+		  UpdateSnippet
 		End Sub
 	#tag EndEvent
 #tag EndEvents
 #tag Events BTNChange
 	#tag Event
 		Sub Action()
-		  app.SelectAbbreviationsFolder
+		  app.SelectSnippetsFolder
 		  if CheckHasUnsavedChanges = false then
 		    LoadInitialData
 		    LoadListboxes
@@ -1367,6 +1382,10 @@ End
 #tag Events BTNNewSet
 	#tag Event
 		Sub Action()
+		  if CheckForActiveSnippetFolder(true) = false then
+		    Return
+		  end if
+		  
 		  dim newName as string
 		  dim i as integer
 		  do
@@ -1394,21 +1413,21 @@ End
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Events BTNNewAbbreviation
+#tag Events BTNNewSnippet
 	#tag Event
 		Sub Action()
-		  dim cc as new ClassAttribute(ClassAttribute.TypeAbbreviation,nil,0,"","New Abbreviation","")
-		  AddAbbreviationToList(cc)
-		  LBAbbreviations.SelectedRowIndex = LBAbbreviations.LastAddedRowIndex
+		  dim cc as new ClassAttribute(ClassAttribute.TypeSnippet,nil,0,"","New Snippet","")
+		  AddSnippetToList(cc)
+		  LBSnippets.SelectedRowIndex = LBSnippets.LastAddedRowIndex
 		End Sub
 	#tag EndEvent
 #tag EndEvents
-#tag Events BTNDeleteAbbreviation
+#tag Events BTNDeleteSnippet
 	#tag Event
 		Sub Action()
-		  for i as integer = LBAbbreviations.RowCount DownTo 0
-		    if LBAbbreviations.Selected(i) then
-		      LBAbbreviations.RemoveRowAt(i)
+		  for i as integer = LBSnippets.RowCount DownTo 0
+		    if LBSnippets.Selected(i) then
+		      LBSnippets.RemoveRowAt(i)
 		    end if
 		  next
 		  

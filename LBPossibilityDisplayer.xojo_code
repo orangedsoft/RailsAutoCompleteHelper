@@ -22,7 +22,7 @@ Inherits Listbox
 		    if me.RowTagAt(row) isa Possibility then
 		      g.forecolor = Possibility(me.RowTagAt(row)).possibility_GetTextColor(g.forecolor)
 		      
-		      if WantsIsForAbbreviations and column = 0 then
+		      if WantsIsForSnippets and column = 0 then
 		        g.DrawText(me.CellValueAt(row,column),x,16)
 		        g.forecolor = rgb(150,150,150)
 		        g.DrawText(me.CellValueAt(row,column+1),x,34)
@@ -37,7 +37,7 @@ Inherits Listbox
 
 
 	#tag Hook, Flags = &h0
-		Event WantsIsForAbbreviations() As Boolean
+		Event WantsIsForSnippets() As Boolean
 	#tag EndHook
 
 	#tag Hook, Flags = &h0

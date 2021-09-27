@@ -4,18 +4,23 @@
 
  Native Mac app, autocomplete helper for Rails projects that pulls data from model files. 
 
+
+## Ruby on Rails Models
 This app will accept a project folder and load the files located in /app/models/ and search for:
 - Methods and self.methods, found by lines that begin with "def "
 - Properties, found by the schema information produced by the Annotate gem
 - Assocations, found by lines beginning with the various Rails association types
 - Scopes, found by lines beginning with "scope "
 
-You can also set up custom abbreviation sets to autocomplete whatever you'd like. With the app focused, press Command-N to open the abbreviations window to create sets and abbreviations.
+## Snippets
+You can also set up custom snippet sets to autocomplete whatever you'd like. With the app focused, press Command-N to open the snippets window to create sets of snippets.
+- Snippet sets will be listed among the models in the main autocomplete window
+- Each snippet set contains snippets that, when selected, will autocomplete just like model atrributes
 
 # **Disclaimer**
 This is a very rudimentary autocomplete app used for internal purposes. There are many limitations including:
-- It doesn't search any folders besides the main app/models/ folder
-- It's Mac-only but could *probably* be modified to work on Windows if you feel like dealing with declares
+- It doesn't search any folders besides the main app/models/ folder (and its subfolders if you have **Deep** checked)
+- It's Mac-only but could *possibly* be modified to work on Windows if you feel like dealing with declares
 - There will be many false positives/negatives for method/property/association matches since we didn't spend a ton of time accounting for different formats
 - It's intended for Rails 6.x
 
@@ -31,8 +36,8 @@ This is a very rudimentary autocomplete app used for internal purposes. There ar
 8. **Press Command-1** while the app is active to clear all input and start you with a blank field.
 9. **Press Command-R** to reload all models/functions/properties/associations for the project. The app will automatically do this every 3 minutes.
 10. **Press Shift-Return** with an item selected to open its definition file in VSCode, as long as you have the [VSCode CLI](https://code.visualstudio.com/docs/editor/command-line) installed.
-11. **Press Command-N** to open the abbreviations editing window. Abbreviation sets are shown along with your models, and can be used to group and autocomplete abbreviations.
-12. **Press Command-O** to change the current directory of abbreviation sets. This needs to be set in order to add abbreviations as they are all saved to text files. You can keep multiple directories with different groups of abbreviation sets for different purposes.
+11. **Press Command-N** to open the snippets editing window. Snippet sets are shown along with your models, and can be used to group and autocomplete snippets.
+12. **Press Command-O** to change the current directory of snippet sets. This needs to be set in order to add snippets as they are all saved to text files. You can keep multiple directories with different groups of snippet sets for different purposes.
 
 ---
 ## Requirements to modify/build the code in this repository

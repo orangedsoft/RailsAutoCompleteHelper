@@ -161,19 +161,19 @@ Begin Menu MainMenuBar
          Visible = True
       End
    End
-   Begin MenuItem AbbreviationsMenu
+   Begin MenuItem SnippetsMenu
       SpecialMenu = 0
-      Value = "Abbreviations"
+      Value = "Snippets"
       Index = -2147483648
-      Text = "Abbreviations"
+      Text = "Snippets"
       AutoEnabled = True
       AutoEnable = True
       Visible = True
-      Begin MenuItem AbbreviationsOpenAbbreviationsFolder
+      Begin MenuItem SnippetsOpenSnippetsFolder
          SpecialMenu = 0
-         Value = "Open Abbreviations Folder..."
+         Value = "Open Snippets Folder..."
          Index = -2147483648
-         Text = "Open Abbreviations Folder..."
+         Text = "Open Snippets Folder..."
          ShortcutKey = "O"
          Shortcut = "Cmd+Option+O"
          MenuModifier = True
@@ -191,11 +191,11 @@ Begin Menu MainMenuBar
          AutoEnable = True
          Visible = True
       End
-      Begin MenuItem AbbreviationsEditAbbreviation
+      Begin MenuItem SnippetsEditSnippet
          SpecialMenu = 0
-         Value = "Edit Abbreviations..."
+         Value = "Edit Snippets..."
          Index = -2147483648
-         Text = "Edit Abbreviations..."
+         Text = "Edit Snippets..."
          ShortcutKey = "N"
          Shortcut = "Cmd+N"
          MenuModifier = True

@@ -43,27 +43,11 @@ Inherits Application
 		  
 		  
 		  LoadPrefs
-		  SetAbbreviationsFolderFromLastLocation
+		  SetSnippetsFolderFromLastLocation
 		  LoadProjectFolder
 		End Sub
 	#tag EndEvent
 
-
-	#tag MenuHandler
-		Function AbbreviationsEditAbbreviation() As Boolean Handles AbbreviationsEditAbbreviation.Action
-			WinAbbreviations.show
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
-
-	#tag MenuHandler
-		Function AbbreviationsOpenAbbreviationsFolder() As Boolean Handles AbbreviationsOpenAbbreviationsFolder.Action
-			SelectAbbreviationsFolder
-			Return True
-			
-		End Function
-	#tag EndMenuHandler
 
 	#tag MenuHandler
 		Function FileClearAll() As Boolean Handles FileClearAll.Action
@@ -86,6 +70,22 @@ Inherits Application
 	#tag MenuHandler
 		Function FileReloadCurrentProject() As Boolean Handles FileReloadCurrentProject.Action
 			LoadProjectFolder(false,1)
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function SnippetsEditSnippet() As Boolean Handles SnippetsEditSnippet.Action
+			WinSnippets.show
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
+
+	#tag MenuHandler
+		Function SnippetsOpenSnippetsFolder() As Boolean Handles SnippetsOpenSnippetsFolder.Action
+			SelectSnippetsFolder
 			Return True
 			
 		End Function
@@ -125,21 +125,21 @@ Inherits Application
 
 	#tag Method, Flags = &h0
 		Sub HideApp()
-		  dim hasAbbreviationWindow as Boolean
+		  dim hasSnippetWindow as Boolean
 		  
 		  if app.MainWindow <> nil then
 		    app.MainWindow.Close
 		    app.MainWindow = nil
 		    
 		    for i as integer = WindowCount-1 downto 0
-		      if window(i) isa WinAbbreviations then
-		        hasAbbreviationWindow = true
+		      if window(i) isa WinSnippets then
+		        hasSnippetWindow = true
 		      else
 		        window(i).close
 		      end if
 		    next
 		    
-		    if not hasAbbreviationWindow then
+		    if not hasSnippetWindow then
 		      sendActivateCommand
 		    end if
 		  end if
@@ -166,7 +166,7 @@ Inherits Application
 		    else
 		      //new save format
 		      LastBaseFolderPath = s.NthField("<LastBaseFolderPath>",2)
-		      LastAbbreviationsPath = s.NthField("<LastAbbreviationsPath>",2)
+		      LastSnippetsPath = s.NthField("<LastSnippetsPath>",2)
 		      SearchDeep = s.NthField("<SearchDeep>",2) = "true"
 		    end if
 		    
@@ -272,22 +272,36 @@ Inherits Application
 		  
 		  dim textout as TextOutputStream = TextOutputStream.Open(ff)
 		  textout.Write "<LastBaseFolderPath>"+LastBaseFolderPath+"<LastBaseFolderPath>"
-		  textout.Write "<LastAbbreviationsPath>"+LastAbbreviationsPath+"<LastAbbreviationsPath>"
+		  textout.Write "<LastSnippetsPath>"+LastSnippetsPath+"<LastSnippetsPath>"
 		  textout.Write "<SearchDeep>"+if(SearchDeep,"true","false")+"<SearchDeep>"
 		  textout.Close
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub SelectAbbreviationsFolder()
-		  dim ff as FolderItem = SelectFolder
-		  if ff = nil then Return
-		  LastAbbreviationsPath = ff.NativePath
+		Sub SelectSnippetsFolder()
+		  if IsSelectingSnippetsFolder then
+		    Return
+		  end if
 		  
+		  IsSelectingSnippetsFolder = true
 		  
-		  SetAbbreviationsFolderFromLastLocation
-		  SavePrefs
-		  LoadProjectFolder
+		  Var dlg As New SelectFolderDialog
+		  dlg.ActionButtonCaption = "Select"
+		  dlg.Title = "Snippets Folder"
+		  dlg.PromptText = "Please select a folder to store your snippets."
+		  
+		  dim ff as FolderItem = dlg.ShowModal
+		  if ff <> nil then
+		    LastSnippetsPath = ff.NativePath
+		    
+		    SetSnippetsFolderFromLastLocation
+		    SavePrefs
+		    LoadProjectFolder
+		  end if
+		  
+		  Finally
+		    IsSelectingSnippetsFolder = false
 		End Sub
 	#tag EndMethod
 
@@ -318,8 +332,10 @@ Inherits Application
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub SetAbbreviationsFolderFromLastLocation()
-		  CurrentAbbreviationsFolder = new FolderItem(LastAbbreviationsPath, FolderItem.PathModes.Native)
+		Sub SetSnippetsFolderFromLastLocation()
+		  if LastSnippetsPath <> "" then
+		    CurrentSnippetsFolder = new FolderItem(LastSnippetsPath, FolderItem.PathModes.Native)
+		  end if
 		End Sub
 	#tag EndMethod
 
@@ -359,11 +375,11 @@ Inherits Application
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		CurrentAbbreviationsFolder As FolderItem
+		CurrentProjectFolder As FolderItem
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		CurrentProjectFolder As FolderItem
+		CurrentSnippetsFolder As FolderItem
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -378,12 +394,16 @@ Inherits Application
 		Protected HotKeyWatcher As HotKeyMBS
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
-		LastAbbreviationsPath As String
+	#tag Property, Flags = &h21
+		Private IsSelectingSnippetsFolder As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
 		LastBaseFolderPath As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		LastSnippetsPath As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -459,7 +479,7 @@ Inherits Application
 			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="LastAbbreviationsPath"
+			Name="LastSnippetsPath"
 			Visible=false
 			Group="Behavior"
 			InitialValue=""

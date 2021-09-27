@@ -36,7 +36,7 @@ Implements Possibility
 		    
 		    AttributeName = nthfield(ll,":",2).nthfield(",",1).trim
 		    
-		  case TypeAbbreviation
+		  case TypeSnippet
 		    
 		    AttributeName = ll
 		    ExtraInfo.Value("description") = extra
@@ -51,14 +51,14 @@ Implements Possibility
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function ExportAbbreviationText() As String
+		Function ExportSnippetText() As String
 		  dim s as string
 		  
-		  s = s + "<abbreviationItem>"
-		  s = s + "<abbreviationDescription>"+ExtraInfo.Lookup("description","")+"</abbreviationDescription>"
-		  s = s + "<abbreviationShort>"+AttributeName+"</abbreviationShort>"
-		  s = s + "<abbreviationContent>"+ExtraInfo.Lookup("content","")+"</abbreviationContent>"
-		  s = s + "</abbreviationItem>"
+		  s = s + "<snippetItem>"
+		  s = s + "<snippetDescription>"+ExtraInfo.Lookup("description","")+"</snippetDescription>"
+		  s = s + "<snippetAbbreviation>"+AttributeName+"</snippetAbbreviation>"
+		  s = s + "<snippetContent>"+ExtraInfo.Lookup("content","")+"</snippetContent>"
+		  s = s + "</snippetItem>"
 		  
 		  Return s
 		End Function
@@ -81,7 +81,7 @@ Implements Possibility
 		    extra = "self.method"
 		  case TypeScope
 		    extra = "scope"
-		  case TypeAbbreviation
+		  case TypeSnippet
 		    extra = ExtraInfo.Lookup("description","")
 		  end select
 		  
@@ -140,7 +140,7 @@ Implements Possibility
 		    end if
 		  next
 		  
-		  if AttributeType = TypeAbbreviation then
+		  if AttributeType = TypeSnippet then
 		    if ExtraInfo.Lookup("description","").StringValue.instr(s) <> 0  then
 		      Return true
 		    end if
@@ -204,9 +204,6 @@ Implements Possibility
 	#tag Constant, Name = ExtraInfoPropertyType, Type = String, Dynamic = False, Default = \"ExtraInfoPropertyType", Scope = Public
 	#tag EndConstant
 
-	#tag Constant, Name = TypeAbbreviation, Type = String, Dynamic = False, Default = \"TypeAbbreviation", Scope = Public
-	#tag EndConstant
-
 	#tag Constant, Name = TypeAssociation, Type = String, Dynamic = False, Default = \"TypeAssociation", Scope = Public
 	#tag EndConstant
 
@@ -220,6 +217,9 @@ Implements Possibility
 	#tag EndConstant
 
 	#tag Constant, Name = TypeSelfMethod, Type = String, Dynamic = False, Default = \"TypeSelfMethod", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = TypeSnippet, Type = String, Dynamic = False, Default = \"TypeSnippet", Scope = Public
 	#tag EndConstant
 
 
@@ -287,6 +287,14 @@ Implements Possibility
 			InitialValue=""
 			Type="String"
 			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="RandomID"
+			Visible=false
+			Group="Behavior"
+			InitialValue=""
+			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
