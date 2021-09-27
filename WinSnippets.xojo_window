@@ -1291,6 +1291,7 @@ End
 	#tag Event
 		Sub Change()
 		  BTNDeleteSet.Enabled = me.SelectedRowCount > 0
+		  BTNNewSnippet.Enabled = me.SelectedRowCount > 0
 		  GB1.Enabled = me.SelectedRowCount > 0
 		  EditSelectedSet
 		End Sub
