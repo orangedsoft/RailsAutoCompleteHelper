@@ -20,7 +20,7 @@ Implements Possibility
 		    
 		  case TypeMethod
 		    
-		    AttributeName = (ll.mid(5))
+		    AttributeName = ll.mid(5)
 		    
 		    if left(AttributeName,5) = "self." then
 		      AttributeName = AttributeName.mid(6)
@@ -42,6 +42,19 @@ Implements Possibility
 		    ExtraInfo.Value("description") = extra
 		    ExtraInfo.Value("content") = extra2
 		    possibleNames.Append(extra)
+		    
+		    
+		  case TypeEnum
+		    
+		    AttributeName = ll.mid(6).nthfield(":",1)
+		    dim enumValues(-1) as string = ll.NthField("[",2).NthField("]",1).split(",")
+		    for i as integer = 0 to UBound(enumValues)
+		      NestedPossibilities.Append(new ClassAttribute(TypeEnumValue,inFile,atLine,trim(enumValues(i))))
+		    next
+		    
+		  case TypeEnumValue
+		    
+		    AttributeName = ll
 		    
 		  end select
 		  
@@ -81,6 +94,8 @@ Implements Possibility
 		    extra = "self.method"
 		  case TypeScope
 		    extra = "scope"
+		  case TypeEnum
+		    extra = "enum"
 		  case TypeSnippet
 		    extra = ExtraInfo.Lookup("description","")
 		  end select
@@ -119,6 +134,8 @@ Implements Possibility
 		    Return rgb(179,133,90)
 		  case TypeScope
 		    return rgb(107,184,86)
+		  case TypeEnum, TypeEnumValue
+		    Return rgb(177,167,154)
 		  end select
 		  
 		  Return defaultColor
@@ -194,6 +211,10 @@ Implements Possibility
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
+		NestedPossibilities(-1) As ClassAttribute
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
 		RandomID As Integer
 	#tag EndProperty
 
@@ -205,6 +226,12 @@ Implements Possibility
 	#tag EndConstant
 
 	#tag Constant, Name = TypeAssociation, Type = String, Dynamic = False, Default = \"TypeAssociation", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = TypeEnum, Type = String, Dynamic = False, Default = \"TypeEnum", Scope = Public
+	#tag EndConstant
+
+	#tag Constant, Name = TypeEnumValue, Type = String, Dynamic = False, Default = \"TypeEnumValue", Scope = Public
 	#tag EndConstant
 
 	#tag Constant, Name = TypeMethod, Type = String, Dynamic = False, Default = \"TypeMethod", Scope = Public

@@ -201,7 +201,7 @@ End
 
 	#tag Event
 		Sub Deactivate()
-		  if ParentWindow <> nil then
+		  if ParentWindow <> nil and ChildWindow = nil then
 		    self.Close
 		  end if
 		End Sub
@@ -306,17 +306,19 @@ End
 		  mCurrentSearch = ""
 		  lastKeyWasDelete = true
 		  
-		  select case searchDepth
-		  case 0
+		  if searchDepth = 0 or _
+		    (LBPossible.SelectedRowIndex <> -1 and ClassAttribute(LBPossible.RowTagAt(LBPossible.SelectedRowIndex)).AttributeType = ClassAttribute.TypeEnum) then
+		    
 		    dim ww as new WinAutoFiller
 		    ww.searchDepth = me.searchDepth + 1
-		    ww.searchDepthClass = EDSearch.text
+		    ww.SearchDepthClassLoaderName = EDSearch.text
+		    if LBPossible.SelectedRowIndex <> -1 and LBPossible.RowTagAt(LBPossible.SelectedRowIndex) isa ClassAttribute then ww.searchDepthClassAttributeObject = LBPossible.RowTagAt(LBPossible.SelectedRowIndex)
 		    ww.LoadPossibilities
 		    ww.ParentWindow = self
 		    self.ChildWindow = ww
 		    ww.show
 		    
-		  case 1
+		  else
 		    //type the text into the previous editor
 		    dim result as string
 		    if IsForSnippets and LBPossible.SelectedRowIndex <> -1 then
@@ -327,20 +329,18 @@ End
 		    app.StartClearAll(false,true)
 		    app.HideApp
 		    app.QueueDelayedKeystrokes(result)//this will attempt to hide app and send to frontmost app
-		  end select
-		  
-		  
+		  end if
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Function GetClassLoaderParent() As ClassLoader
-		  if searchDepthClass = "" then
+		  if SearchDepthClassLoaderName = "" then
 		    Return nil
 		  end if
 		  
 		  for each cc as ClassLoader in ClassLoader.CurrentClasses
-		    if cc.ClassName = searchDepthClass then
+		    if cc.ClassName = SearchDepthClassLoaderName then
 		      Return cc
 		    end if
 		  next
@@ -360,8 +360,8 @@ End
 		    CHDeep.value = app.SearchDeep
 		  end if
 		  
-		  if searchDepthClass <> "" then
-		    LBFolderName.Text = searchDepthClass
+		  if SearchDepthClassLoaderName <> "" then
+		    LBFolderName.Text = SearchDepthClassLoaderName
 		  elseif app.CurrentProjectFolder <> nil then
 		    LBFolderName.Text = app.CurrentProjectFolder.Name
 		  end if
@@ -380,6 +380,13 @@ End
 		      end if
 		      
 		      for each ct as ClassAttribute in cc.MyAttributes
+		        possibilities.Append(ct)
+		        possibilitiesNames.Append(ct.possibility_GetName)
+		      next
+		    end if
+		  case 2
+		    if searchDepthClassAttributeObject <> nil then
+		      for each ct as ClassAttribute in searchDepthClassAttributeObject.NestedPossibilities
 		        possibilities.Append(ct)
 		        possibilitiesNames.Append(ct.possibility_GetName)
 		      next
@@ -533,7 +540,11 @@ End
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		searchDepthClass As String
+		searchDepthClassAttributeObject As ClassAttribute
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		SearchDepthClassLoaderName As String
 	#tag EndProperty
 
 
@@ -925,7 +936,7 @@ End
 		EditorType=""
 	#tag EndViewProperty
 	#tag ViewProperty
-		Name="searchDepthClass"
+		Name="SearchDepthClassLoaderName"
 		Visible=false
 		Group="Behavior"
 		InitialValue=""

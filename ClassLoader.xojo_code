@@ -23,7 +23,7 @@ Implements Possibility
 		  //0 base
 		  //1 schema stasrt
 		  //2 properties start in schema
-		  //3 methods
+		  //3 methods, scopes, associations, enums
 		  
 		  
 		  dim tt as TextInputStream = TextInputStream.Open(withFile)
@@ -67,6 +67,9 @@ Implements Possibility
 		        elseif ll.left(6) = "scope " then
 		          //it's a scope
 		          MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeScope,withFile,linePosition,ll))
+		        elseif ll.left(5) = "enum " then
+		          //it's an enum
+		          MyAttributes.Append(new ClassAttribute(ClassAttribute.TypeEnum,withFile,linePosition,ll))
 		        else
 		          //check if it's an association
 		          for aa as integer = 0 to UBound(associationTypes)
@@ -156,6 +159,7 @@ Implements Possibility
 		  for i as integer = 0 to UBound(n)
 		    s.Append(n(i).ReplaceAll("_",""))
 		    s.Append(n(i).ReplaceAll(" ",""))
+		    if left(n(i),1) = ":" then s.Append(n(i).mid(2)) 
 		  next
 		  
 		  Return s

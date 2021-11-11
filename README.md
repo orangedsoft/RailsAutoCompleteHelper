@@ -11,6 +11,7 @@ This app will accept a project folder and load the files located in /app/models/
 - Properties, found by the schema information produced by the Annotate gem
 - Assocations, found by lines beginning with the various Rails association types
 - Scopes, found by lines beginning with "scope "
+- Enums, found by lines beginning with "enum "
 
 ## Snippets
 You can also set up custom snippet sets to autocomplete whatever you'd like. With the app focused, press Command-N to open the snippets window to create sets of snippets.
